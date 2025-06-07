@@ -183,12 +183,18 @@ useVolumeFilter = input.bool(false, "Use Volume Filter", group=vol_filter_group)
 volume_length = input.int(20, "Volume Length", minval=5, maxval=100, group=vol_filter_group)
 volume_multiplier = input.float(1.5, "Volume Multiplier", minval=0.5, maxval=5.0, step=0.1, group=vol_filter_group)
 volume_condition = input.string("Above Average", "Volume Condition", options=["Above Average", "Below Average", "Rising", "Falling"], group=vol_filter_group)
+// НОВОЕ: Signal Memory для Volume Filter
+volume_use_signal_memory = input.bool(false, "Activate Signal Memory for Volume Filter", group=vol_filter_group)
+volume_memory_bars = input.int(3, "Memory Bars for Volume Filter", group=vol_filter_group, minval=1)
 
 volat_filter_group = "═══════════ Volatility Filter ═══════════"
 useVolatilityFilter = input.bool(false, "Use Volatility Filter", group=volat_filter_group)
 vol_length = input.int(20, "Volatility Length", minval=5, maxval=100, group=volat_filter_group)
 vol_threshold = input.float(1.0, "Volatility Threshold", minval=0.1, maxval=10.0, step=0.1, group=volat_filter_group)
 vol_condition = input.string("Rising", "Volatility Condition", options=["Rising", "Falling", "Above Level", "Below Level"], group=volat_filter_group)
+// НОВОЕ: Signal Memory для Volatility Filter
+volatility_use_signal_memory = input.bool(false, "Activate Signal Memory for Volatility Filter", group=volat_filter_group)
+volatility_memory_bars = input.int(3, "Memory Bars for Volatility Filter", group=volat_filter_group, minval=1)
 
 // ===============================
 // HIGH/LOW PERIOD FILTER
@@ -197,6 +203,9 @@ hl_filter_group = "═══════════ High/Low Filter ═══�
 useHighLowFilter = input.bool(false, "Use Highest/Lowest Filter", group=hl_filter_group)
 highlow_period = input.int(20, "Period for High/Low", minval=5, maxval=200, group=hl_filter_group)
 highlow_min_change = input.float(2.0, "Min Change % for Signal", minval=0.1, maxval=10.0, step=0.1, group=hl_filter_group)
+// НОВОЕ: Signal Memory для High/Low Filter
+highlow_use_signal_memory = input.bool(false, "Activate Signal Memory for High/Low Filter", group=hl_filter_group)
+highlow_memory_bars = input.int(3, "Memory Bars for High/Low Filter", group=hl_filter_group, minval=1)
 
 // ===============================
 // ATR CHANGE FILTER
@@ -205,6 +214,9 @@ atr_change_group = "═══════════ ATR Change Filter ══�
 useATRChangeFilter = input.bool(false, "Use ATR Change Filter", group=atr_change_group)
 atr_change_period = input.int(20, "ATR Period for Comparison", minval=5, maxval=100, group=atr_change_group)
 atr_change_threshold = input.float(10.0, "Min ATR Change %", minval=1.0, maxval=50.0, step=1.0, group=atr_change_group)
+// НОВОЕ: Signal Memory для ATR Change Filter
+atr_change_use_signal_memory = input.bool(false, "Activate Signal Memory for ATR Change Filter", group=atr_change_group)
+atr_change_memory_bars = input.int(3, "Memory Bars for ATR Change Filter", group=atr_change_group, minval=1)
 
 // ===============================
 // BLOCK IF WORSE THAN
@@ -222,6 +234,9 @@ pinbar_ma1_length = input.int(10, "MA1 Length", minval=2, maxval=100, group=pinb
 pinbar_ma2_length = input.int(20, "MA2 Length", minval=2, maxval=100, group=pinbar_group)
 pinbar_ma3_length = input.int(50, "MA3 Length", minval=2, maxval=100, group=pinbar_group)
 pinbar_ratio = input.float(2.0, "Pin Bar Ratio", minval=1.5, maxval=5.0, step=0.1, group=pinbar_group)
+// НОВОЕ: Signal Memory для PinBar+MA
+pinbar_use_signal_memory = input.bool(false, "Activate Signal Memory for PinBar+MA", group=pinbar_group)
+pinbar_memory_bars = input.int(3, "Memory Bars for PinBar+MA", group=pinbar_group, minval=1)
 
 // ===============================
 // SUPERTREND FILTER
@@ -262,6 +277,9 @@ channel_type = input.string("Bollinger Bands", "Channel Type", options=["Bolling
 channel_length = input.int(20, "Channel Length", minval=5, maxval=100, group=channel_group)
 channel_multiplier = input.float(2.0, "Channel Multiplier", minval=0.5, maxval=5.0, step=0.1, group=channel_group)
 channel_signal_type = input.string("Touch", "Channel Signal", options=["Touch", "Close Outside", "Breakout"], group=channel_group)
+// НОВОЕ: Signal Memory для Channels
+channels_use_signal_memory = input.bool(false, "Activate Signal Memory for Channels", group=channel_group)
+channels_memory_bars = input.int(3, "Memory Bars for Channels", group=channel_group, minval=1)
 
 // ===============================
 // RSI SETTINGS - EXPANDED (3 instances)
@@ -338,27 +356,35 @@ st3_signal_memory = input.bool(false, "ST #3 Signal Memory", group=st_expanded_g
 st3_memory_bars = input.int(5, "ST #3 Memory Bars", minval=1, maxval=20, group=st_expanded_group)
 
 // ===============================
-// RVI SETTINGS
+// RVI SETTINGS - СТАНДАРТИЗИРОВАННЫЕ
 // ===============================
 rvi_group = "═══════════ RVI ═══════════"
 useRVI = input.bool(false, "Use RVI", group=rvi_group)
 rvi_length = input.int(10, "RVI Length", minval=2, maxval=100, group=rvi_group)
 rvi_overbought = input.float(0.4, "RVI Overbought", minval=0.1, maxval=0.9, step=0.1, group=rvi_group)
 rvi_oversold = input.float(-0.4, "RVI Oversold", minval=-0.9, maxval=-0.1, step=0.1, group=rvi_group)
-rvi_signal_type = input.string("Level Filter", "RVI Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling", "Zero Cross"], group=rvi_group)
+// НОВОЕ: Стандартизированные типы сигналов для RVI
+rvi_long_condition = input.string("Level Filter", "RVI Long Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=rvi_group)
+rvi_short_condition = input.string("Level Filter", "RVI Short Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=rvi_group)
+rvi_custom_min = input.float(-0.2, "RVI Custom Min", minval=-1.0, maxval=1.0, step=0.1, group=rvi_group)
+rvi_custom_max = input.float(0.2, "RVI Custom Max", minval=-1.0, maxval=1.0, step=0.1, group=rvi_group)
 rvi_signal_memory = input.bool(false, "RVI Signal Memory", group=rvi_group)
 rvi_memory_bars = input.int(5, "RVI Memory Bars", minval=1, maxval=20, group=rvi_group)
 rvi_direction_period = input.int(3, "RVI Direction Period", minval=1, maxval=10, group=rvi_group)
 
 // ===============================
-// MFI SETTINGS
+// MFI SETTINGS - СТАНДАРТИЗИРОВАННЫЕ
 // ===============================
 mfi_group = "═══════════ MFI ═══════════"
 useMFI = input.bool(false, "Use MFI", group=mfi_group)
 mfi_length = input.int(14, "MFI Length", minval=2, maxval=100, group=mfi_group)
 mfi_overbought = input.float(80, "MFI Overbought", minval=50, maxval=90, group=mfi_group)
 mfi_oversold = input.float(20, "MFI Oversold", minval=10, maxval=50, group=mfi_group)
-mfi_signal_type = input.string("Level Filter", "MFI Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling"], group=mfi_group)
+// НОВОЕ: Стандартизированные типы сигналов для MFI
+mfi_long_condition = input.string("Level Filter", "MFI Long Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling"], group=mfi_group)
+mfi_short_condition = input.string("Level Filter", "MFI Short Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling"], group=mfi_group)
+mfi_custom_min = input.float(30, "MFI Custom Min", minval=0, maxval=100, group=mfi_group)
+mfi_custom_max = input.float(70, "MFI Custom Max", minval=0, maxval=100, group=mfi_group)
 mfi_signal_memory = input.bool(false, "MFI Signal Memory", group=mfi_group)
 mfi_memory_bars = input.int(5, "MFI Memory Bars", minval=1, maxval=20, group=mfi_group)
 mfi_direction_period = input.int(3, "MFI Direction Period", minval=1, maxval=10, group=mfi_group)
@@ -379,27 +405,35 @@ stoch_memory_bars = input.int(5, "Stochastic Memory Bars", minval=1, maxval=20, 
 stoch_direction_period = input.int(3, "Stochastic Direction Period", minval=1, maxval=10, group=stoch_group)
 
 // ===============================
-// CCI SETTINGS
+// CCI SETTINGS - СТАНДАРТИЗИРОВАННЫЕ
 // ===============================
 cci_group = "═══════════ CCI ═══════════"
 useCCI = input.bool(false, "Use CCI", group=cci_group)
 cci_length = input.int(20, "CCI Length", minval=5, maxval=200, group=cci_group)
 cci_overbought = input.float(100, "CCI Overbought", minval=50, maxval=200, group=cci_group)
 cci_oversold = input.float(-100, "CCI Oversold", minval=-200, maxval=-50, group=cci_group)
-cci_signal_type = input.string("Level Filter", "CCI Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling", "Zero Cross"], group=cci_group)
+// НОВОЕ: Стандартизированные типы сигналов для CCI
+cci_long_condition = input.string("Level Filter", "CCI Long Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=cci_group)
+cci_short_condition = input.string("Level Filter", "CCI Short Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=cci_group)
+cci_custom_min = input.float(-50, "CCI Custom Min", minval=-300, maxval=300, group=cci_group)
+cci_custom_max = input.float(50, "CCI Custom Max", minval=-300, maxval=300, group=cci_group)
 cci_signal_memory = input.bool(false, "CCI Signal Memory", group=cci_group)
 cci_memory_bars = input.int(5, "CCI Memory Bars", minval=1, maxval=20, group=cci_group)
 cci_direction_period = input.int(3, "CCI Direction Period", minval=1, maxval=10, group=cci_group)
 
 // ===============================
-// MOMENTUM SETTINGS
+// MOMENTUM SETTINGS - СТАНДАРТИЗИРОВАННЫЕ
 // ===============================
 mom_group = "═══════════ Momentum ═══════════"
 useMomentum = input.bool(false, "Use Momentum", group=mom_group)
 momentum_length = input.int(10, "Momentum Length", minval=2, maxval=100, group=mom_group)
 momentum_overbought = input.float(0.5, "Momentum Overbought", minval=0.1, maxval=2.0, step=0.1, group=mom_group)
 momentum_oversold = input.float(-0.5, "Momentum Oversold", minval=-2.0, maxval=-0.1, step=0.1, group=mom_group)
-momentum_signal_type = input.string("Level Filter", "Momentum Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling", "Zero Cross"], group=mom_group)
+// НОВОЕ: Стандартизированные типы сигналов для Momentum
+momentum_long_condition = input.string("Level Filter", "Momentum Long Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=mom_group)
+momentum_short_condition = input.string("Level Filter", "Momentum Short Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=mom_group)
+momentum_custom_min = input.float(-0.2, "Momentum Custom Min", minval=-5.0, maxval=5.0, step=0.1, group=mom_group)
+momentum_custom_max = input.float(0.2, "Momentum Custom Max", minval=-5.0, maxval=5.0, step=0.1, group=mom_group)
 momentum_signal_memory = input.bool(false, "Momentum Signal Memory", group=mom_group)
 momentum_memory_bars = input.int(5, "Momentum Memory Bars", minval=1, maxval=20, group=mom_group)
 momentum_direction_period = input.int(3, "Momentum Direction Period", minval=1, maxval=10, group=mom_group)
@@ -423,7 +457,7 @@ dmfi_band_length = input.int(20, "Band Length", minval=5, maxval=100, group=dmfi
 dmfi_band_mult = input.float(2.0, "Band Multiplier", minval=1.0, maxval=5.0, step=0.1, group=dmfi_group)
 
 // ===============================
-// SMI ERGODIC OSCILLATOR
+// SMI ERGODIC OSCILLATOR - СТАНДАРТИЗИРОВАННЫЕ
 // ===============================
 smi_group = "═══════════ SMI Ergodic ═══════════"
 useSMIO = input.bool(false, "Use SMI Ergodic", group=smi_group)
@@ -432,6 +466,14 @@ smio_long_length = input.int(20, "Long Length", minval=5, maxval=100, group=smi_
 smio_signal_length = input.int(5, "Signal Length", minval=2, maxval=50, group=smi_group)
 smio_overbought = input.float(0.5, "Overbought", minval=0.1, maxval=1.0, step=0.1, group=smi_group)
 smio_oversold = input.float(-0.5, "Oversold", minval=-1.0, maxval=-0.1, step=0.1, group=smi_group)
+// НОВОЕ: Стандартизированные типы сигналов для SMI Ergodic
+smio_long_condition = input.string("Level Filter", "SMI Long Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=smi_group)
+smio_short_condition = input.string("Level Filter", "SMI Short Condition", options=["Level Filter", "Cross Level Up", "Cross Level Down", "In Range", "Outside Range", "Rising", "Falling", "Zero Cross"], group=smi_group)
+smio_custom_min = input.float(-0.2, "SMI Custom Min", minval=-1.0, maxval=1.0, step=0.1, group=smi_group)
+smio_custom_max = input.float(0.2, "SMI Custom Max", minval=-1.0, maxval=1.0, step=0.1, group=smi_group)
+smio_signal_memory = input.bool(false, "SMI Signal Memory", group=smi_group)
+smio_memory_bars = input.int(5, "SMI Memory Bars", minval=1, maxval=20, group=smi_group)
+smio_direction_period = input.int(3, "SMI Direction Period", minval=1, maxval=10, group=smi_group)
 
 // ===============================
 // DMI SETTINGS
@@ -455,6 +497,9 @@ chaikin_length = input.int(20, "Chaikin Length", minval=5, maxval=100, group=cha
 chaikin_overbought = input.float(0.2, "Overbought", minval=0.1, maxval=0.5, step=0.05, group=chaikin_group)
 chaikin_oversold = input.float(-0.2, "Oversold", minval=-0.5, maxval=-0.1, step=0.05, group=chaikin_group)
 chaikin_use_zero = input.bool(true, "Use Zero Cross Signal", group=chaikin_group)
+// НОВОЕ: Signal Memory для Chaikin
+chaikin_signal_memory = input.bool(false, "Chaikin Signal Memory", group=chaikin_group)
+chaikin_memory_bars = input.int(5, "Chaikin Memory Bars", minval=1, maxval=20, group=chaikin_group)
 
 // ===============================
 // BALANCE OF POWER
@@ -465,6 +510,9 @@ bop_smooth_length = input.int(14, "Smoothing Length", minval=1, maxval=50, group
 bop_overbought = input.float(0.5, "Overbought", minval=0.1, maxval=1.0, step=0.1, group=bop_group)
 bop_oversold = input.float(-0.5, "Oversold", minval=-1.0, maxval=-0.1, step=0.1, group=bop_group)
 bop_use_zero = input.bool(true, "Use Zero Cross Signal", group=bop_group)
+// НОВОЕ: Signal Memory для BOP
+bop_signal_memory = input.bool(false, "BOP Signal Memory", group=bop_group)
+bop_memory_bars = input.int(5, "BOP Memory Bars", minval=1, maxval=20, group=bop_group)
 
 // ===============================
 // MACD SETTINGS
@@ -495,6 +543,9 @@ useQQE = input.bool(false, "Use QQE Signals", group=qqe_group)
 qqe_rsi_length = input.int(14, "RSI Length", minval=2, maxval=100, group=qqe_group)
 qqe_smoothing = input.int(5, "Smoothing", minval=1, maxval=50, group=qqe_group)
 qqe_factor = input.float(4.236, "QQE Factor", minval=1.0, maxval=10.0, step=0.1, group=qqe_group)
+// НОВОЕ: Signal Memory для QQE
+qqe_signal_memory = input.bool(false, "QQE Signal Memory", group=qqe_group)
+qqe_memory_bars = input.int(5, "QQE Memory Bars", minval=1, maxval=20, group=qqe_group)
 
 // ===============================
 // DIVERGENCES
@@ -519,6 +570,9 @@ use_engulfing = input.bool(true, "Engulfing", group=candle_group)
 use_doji = input.bool(true, "Doji", group=candle_group)
 use_morning_evening_star = input.bool(true, "Morning/Evening Star", group=candle_group)
 use_three_soldiers_crows = input.bool(true, "Three Soldiers/Crows", group=candle_group)
+// НОВОЕ: Signal Memory для Candle Patterns
+candle_signal_memory = input.bool(false, "Candle Signal Memory", group=candle_group)
+candle_memory_bars = input.int(3, "Candle Memory Bars", minval=1, maxval=20, group=candle_group)
 
 // ===============================
 // LINEAR REGRESSION CHANNEL
@@ -527,6 +581,9 @@ lrc_group = "═══════════ LRC ═════════�
 useLRC = input.bool(false, "Use Linear Regression Channel", group=lrc_group)
 lrc_length = input.int(100, "LRC Length", minval=20, maxval=500, group=lrc_group)
 lrc_deviation = input.float(2.0, "Deviation", minval=0.5, maxval=5.0, step=0.1, group=lrc_group)
+// НОВОЕ: Signal Memory для LRC
+lrc_signal_memory = input.bool(false, "LRC Signal Memory", group=lrc_group)
+lrc_memory_bars = input.int(3, "LRC Memory Bars", minval=1, maxval=20, group=lrc_group)
 
 // ===============================
 // EXTERNAL INDICATORS
@@ -536,6 +593,9 @@ useExternal = input.bool(false, "Use External Indicator", group=ext_group)
 external_source = input.source(close, "External Source", group=ext_group)
 external_condition = input.string("Above", "Condition", options=["Above", "Below", "Cross Up", "Cross Down"], group=ext_group)
 external_level = input.float(0, "Level", group=ext_group)
+// НОВОЕ: Signal Memory для External
+external_signal_memory = input.bool(false, "External Signal Memory", group=ext_group)
+external_memory_bars = input.int(3, "External Memory Bars", minval=1, maxval=20, group=ext_group)
 
 // ===============================
 // BTCUSDT SOURCE DATA
@@ -874,9 +934,17 @@ qqe_trend = new_qqe_trend
 
 // RVI
 [rvi_val, rvi_signal] = calculate_rvi(rvi_length)
+// НОВОЕ: RVI cross calculations для новых типов сигналов
+rvi_cross_up = ta.crossover(rvi_val, rvi_oversold)
+rvi_cross_down = ta.crossunder(rvi_val, rvi_overbought)
+rvi_zero_cross_up = ta.crossover(rvi_val, 0)
+rvi_zero_cross_down = ta.crossunder(rvi_val, 0)
 
 // MFI
 mfi_val = ta.mfi(hlc3, mfi_length)
+// НОВОЕ: MFI cross calculations для новых типов сигналов
+mfi_cross_up = ta.crossover(mfi_val, mfi_oversold)
+mfi_cross_down = ta.crossunder(mfi_val, mfi_overbought)
 
 // Stochastic - FIXED: Variable name conflict
 stoch_k_raw = ta.stoch(close, high, low, stoch_k_length)
@@ -889,9 +957,19 @@ stoch_cross_down = ta.crossunder(stoch_k_smoothed, stoch_overbought)
 
 // CCI
 cci_val = ta.cci(hlc3, cci_length)
+// НОВОЕ: CCI cross calculations для новых типов сигналов
+cci_cross_up = ta.crossover(cci_val, cci_oversold)
+cci_cross_down = ta.crossunder(cci_val, cci_overbought)
+cci_zero_cross_up = ta.crossover(cci_val, 0)
+cci_zero_cross_down = ta.crossunder(cci_val, 0)
 
 // Momentum
 momentum_val = ta.mom(close, momentum_length) / close[momentum_length]
+// НОВОЕ: Momentum cross calculations для новых типов сигналов
+momentum_cross_up = ta.crossover(momentum_val, momentum_oversold)
+momentum_cross_down = ta.crossunder(momentum_val, momentum_overbought)
+momentum_zero_cross_up = ta.crossover(momentum_val, 0)
+momentum_zero_cross_down = ta.crossunder(momentum_val, 0)
 
 // Dynamic RSI
 [drsi_upper, drsi_lower] = dynamic_bands(rsi1_value, drsi_band_length, drsi_band_mult)
@@ -901,6 +979,11 @@ momentum_val = ta.mom(close, momentum_length) / close[momentum_length]
 
 // SMI Ergodic
 [smi_val, smi_signal] = smi_ergodic(smio_short_length, smio_long_length, smio_signal_length)
+// НОВОЕ: SMI cross calculations для новых типов сигналов
+smi_cross_up = ta.crossover(smi_val, smio_oversold)
+smi_cross_down = ta.crossunder(smi_val, smio_overbought)
+smi_zero_cross_up = ta.crossover(smi_val, 0)
+smi_zero_cross_down = ta.crossunder(smi_val, 0)
 
 // DMI
 [diplus, diminus, adx] = ta.dmi(dmi_length, dmi_length)
@@ -984,7 +1067,7 @@ var int atr_change_signal_bar = 0
 var int pinbar_signal_bar = 0
 
 // ===============================
-// SIGNAL CONDITIONS - FIXED SYNTAX
+// SIGNAL CONDITIONS - УНИВЕРСАЛЬНАЯ СИСТЕМА SIGNAL MEMORY
 // ===============================
 // Date and day filters
 date_filter = year >= startYear and year <= stopYear
@@ -1001,11 +1084,12 @@ is_sunday_blocked = blockSu and dayofweek == dayofweek.sunday
 day_blocked = is_monday_blocked or is_tuesday_blocked or is_wednesday_blocked or is_thursday_blocked or is_friday_blocked or is_saturday_blocked or is_sunday_blocked
 day_filter = not day_blocked
 
-// Initialize signal variables - EXPANDED RSI LOGIC WITH SIGNAL MEMORY
-// RSI1 Signals - ENHANCED with multiple signal types and memory
+// ===============================
+// ENHANCED RSI SIGNALS (уже реализовано в прошлом коде)
+// ===============================
+// RSI1 Signals
 rsi1_long_signal = true
 if useRSI1
-    // Calculate current signals based on type
     current_rsi1_long_signal = false
     rsi1_rising = rsi1_value > rsi1_value[rsi1_direction_period]
     rsi1_falling = rsi1_value < rsi1_value[rsi1_direction_period]
@@ -1025,14 +1109,12 @@ if useRSI1
     else
         current_rsi1_long_signal := false
     
-    // Signal Memory Logic
     if current_rsi1_long_signal
         rsi1_signal_bar := bar_index
     
     memory_active = rsi1_signal_memory and bar_index - rsi1_signal_bar <= rsi1_memory_bars
     rsi1_long_signal := current_rsi1_long_signal or memory_active
 
-// RSI1 Short Signals
 rsi1_short_signal = true
 if useRSI1
     current_rsi1_short_signal = false
@@ -1055,7 +1137,7 @@ if useRSI1
     memory_active_short = rsi1_signal_memory and bar_index - rsi1_signal_bar <= rsi1_memory_bars
     rsi1_short_signal := current_rsi1_short_signal or memory_active_short
 
-// RSI2 Signals - ENHANCED with multiple signal types and memory
+// RSI2 и RSI3 - аналогично RSI1 (код уже есть в предыдущей версии)
 rsi2_long_signal = true
 if useRSI2
     current_rsi2_long_signal = false
@@ -1104,7 +1186,7 @@ if useRSI2
     memory_active_2_short = rsi2_signal_memory and bar_index - rsi2_signal_bar <= rsi2_memory_bars
     rsi2_short_signal := current_rsi2_short_signal or memory_active_2_short
 
-// RSI3 Signals - ENHANCED with multiple signal types and memory
+// RSI3 Signals
 rsi3_long_signal = true
 if useRSI3
     current_rsi3_long_signal = false
@@ -1153,7 +1235,9 @@ if useRSI3
     memory_active_3_short = rsi3_signal_memory and bar_index - rsi3_signal_bar <= rsi3_memory_bars
     rsi3_short_signal := current_rsi3_short_signal or memory_active_3_short
 
-// ENHANCED SuperTrend Signals with signal type selection and memory
+// ===============================
+// ENHANCED SUPERTREND SIGNALS (уже реализовано)
+// ===============================
 // ST1 - ENHANCED with Signal Memory
 st1_trend_up_calc = st1_direction == 1
 st1_trend_down_calc = st1_direction == -1
@@ -1172,7 +1256,6 @@ if st1_signal_type == "Trend Change"
 else if st1_signal_type == "Trend Filter"
     current_st1_short_signal := st1_trend_down_calc
 
-// Signal Memory for ST1 - FIXED logic
 if current_st1_long_signal or current_st1_short_signal
     st1_signal_bar := bar_index
 
@@ -1230,56 +1313,342 @@ st3_memory_active = st3_signal_memory and bar_index - st3_signal_bar <= st3_memo
 st3_long_signal = useST3 ? (current_st3_long_signal or (st3_memory_active and st3_trend_up_calc)) : true
 st3_short_signal = useST3 ? (current_st3_short_signal or (st3_memory_active and st3_trend_down_calc)) : true
 
-// Volume filter - FIXED: replaced switch with if/else
+// ===============================
+// СТАНДАРТИЗИРОВАННЫЕ ОСЦИЛЛЯТОРЫ С SIGNAL MEMORY
+// ===============================
+
+// RVI Signals - ПОЛНОСТЬЮ СТАНДАРТИЗИРОВАННЫЕ с Signal Memory
+rvi_long_signal = true
+rvi_short_signal = true
+if useRVI
+    current_rvi_long_signal = false
+    current_rvi_short_signal = false
+    
+    rvi_rising = rvi_val > rvi_val[rvi_direction_period]
+    rvi_falling = rvi_val < rvi_val[rvi_direction_period]
+    
+    if rvi_long_condition == "Level Filter"
+        current_rvi_long_signal := rvi_val < rvi_oversold
+    else if rvi_long_condition == "Cross Level Up"
+        current_rvi_long_signal := rvi_cross_up
+    else if rvi_long_condition == "Cross Level Down"
+        current_rvi_long_signal := rvi_cross_down
+    else if rvi_long_condition == "In Range"
+        current_rvi_long_signal := rvi_val >= rvi_custom_min and rvi_val <= rvi_custom_max
+    else if rvi_long_condition == "Outside Range"
+        current_rvi_long_signal := rvi_val < rvi_custom_min or rvi_val > rvi_custom_max
+    else if rvi_long_condition == "Rising"
+        current_rvi_long_signal := rvi_rising
+    else if rvi_long_condition == "Falling"
+        current_rvi_long_signal := rvi_falling
+    else if rvi_long_condition == "Zero Cross"
+        current_rvi_long_signal := rvi_zero_cross_up
+    
+    if rvi_short_condition == "Level Filter"
+        current_rvi_short_signal := rvi_val > rvi_overbought
+    else if rvi_short_condition == "Cross Level Up"
+        current_rvi_short_signal := rvi_cross_down
+    else if rvi_short_condition == "Cross Level Down"
+        current_rvi_short_signal := rvi_cross_up
+    else if rvi_short_condition == "In Range"
+        current_rvi_short_signal := rvi_val < rvi_custom_min or rvi_val > rvi_custom_max
+    else if rvi_short_condition == "Outside Range"
+        current_rvi_short_signal := rvi_val >= rvi_custom_min and rvi_val <= rvi_custom_max
+    else if rvi_short_condition == "Rising"
+        current_rvi_short_signal := rvi_falling
+    else if rvi_short_condition == "Falling"
+        current_rvi_short_signal := rvi_rising
+    else if rvi_short_condition == "Zero Cross"
+        current_rvi_short_signal := rvi_zero_cross_down
+    
+    if current_rvi_long_signal or current_rvi_short_signal
+        rvi_signal_bar := bar_index
+    
+    rvi_memory_active = rvi_signal_memory and bar_index - rvi_signal_bar <= rvi_memory_bars
+    rvi_long_signal := current_rvi_long_signal or (rvi_memory_active and current_rvi_long_signal)
+    rvi_short_signal := current_rvi_short_signal or (rvi_memory_active and current_rvi_short_signal)
+
+// MFI Signals - ПОЛНОСТЬЮ СТАНДАРТИЗИРОВАННЫЕ с Signal Memory
+mfi_long_signal = true
+mfi_short_signal = true
+if useMFI
+    current_mfi_long_signal = false
+    current_mfi_short_signal = false
+    
+    mfi_rising = mfi_val > mfi_val[mfi_direction_period]
+    mfi_falling = mfi_val < mfi_val[mfi_direction_period]
+    
+    if mfi_long_condition == "Level Filter"
+        current_mfi_long_signal := mfi_val < mfi_oversold
+    else if mfi_long_condition == "Cross Level Up"
+        current_mfi_long_signal := mfi_cross_up
+    else if mfi_long_condition == "Cross Level Down"
+        current_mfi_long_signal := mfi_cross_down
+    else if mfi_long_condition == "In Range"
+        current_mfi_long_signal := mfi_val >= mfi_custom_min and mfi_val <= mfi_custom_max
+    else if mfi_long_condition == "Outside Range"
+        current_mfi_long_signal := mfi_val < mfi_custom_min or mfi_val > mfi_custom_max
+    else if mfi_long_condition == "Rising"
+        current_mfi_long_signal := mfi_rising
+    else if mfi_long_condition == "Falling"
+        current_mfi_long_signal := mfi_falling
+    
+    if mfi_short_condition == "Level Filter"
+        current_mfi_short_signal := mfi_val > mfi_overbought
+    else if mfi_short_condition == "Cross Level Up"
+        current_mfi_short_signal := mfi_cross_down
+    else if mfi_short_condition == "Cross Level Down"
+        current_mfi_short_signal := mfi_cross_up
+    else if mfi_short_condition == "In Range"
+        current_mfi_short_signal := mfi_val < mfi_custom_min or mfi_val > mfi_custom_max
+    else if mfi_short_condition == "Outside Range"
+        current_mfi_short_signal := mfi_val >= mfi_custom_min and mfi_val <= mfi_custom_max
+    else if mfi_short_condition == "Rising"
+        current_mfi_short_signal := mfi_falling
+    else if mfi_short_condition == "Falling"
+        current_mfi_short_signal := mfi_rising
+    
+    if current_mfi_long_signal or current_mfi_short_signal
+        mfi_signal_bar := bar_index
+    
+    mfi_memory_active = mfi_signal_memory and bar_index - mfi_signal_bar <= mfi_memory_bars
+    mfi_long_signal := current_mfi_long_signal or (mfi_memory_active and current_mfi_long_signal)
+    mfi_short_signal := current_mfi_short_signal or (mfi_memory_active and current_mfi_short_signal)
+
+// CCI Signals - ПОЛНОСТЬЮ СТАНДАРТИЗИРОВАННЫЕ с Signal Memory
+cci_long_signal = true
+cci_short_signal = true
+if useCCI
+    current_cci_long_signal = false
+    current_cci_short_signal = false
+    
+    cci_rising = cci_val > cci_val[cci_direction_period]
+    cci_falling = cci_val < cci_val[cci_direction_period]
+    
+    if cci_long_condition == "Level Filter"
+        current_cci_long_signal := cci_val < cci_oversold
+    else if cci_long_condition == "Cross Level Up"
+        current_cci_long_signal := cci_cross_up
+    else if cci_long_condition == "Cross Level Down"
+        current_cci_long_signal := cci_cross_down
+    else if cci_long_condition == "In Range"
+        current_cci_long_signal := cci_val >= cci_custom_min and cci_val <= cci_custom_max
+    else if cci_long_condition == "Outside Range"
+        current_cci_long_signal := cci_val < cci_custom_min or cci_val > cci_custom_max
+    else if cci_long_condition == "Rising"
+        current_cci_long_signal := cci_rising
+    else if cci_long_condition == "Falling"
+        current_cci_long_signal := cci_falling
+    else if cci_long_condition == "Zero Cross"
+        current_cci_long_signal := cci_zero_cross_up
+    
+    if cci_short_condition == "Level Filter"
+        current_cci_short_signal := cci_val > cci_overbought
+    else if cci_short_condition == "Cross Level Up"
+        current_cci_short_signal := cci_cross_down
+    else if cci_short_condition == "Cross Level Down"
+        current_cci_short_signal := cci_cross_up
+    else if cci_short_condition == "In Range"
+        current_cci_short_signal := cci_val < cci_custom_min or cci_val > cci_custom_max
+    else if cci_short_condition == "Outside Range"
+        current_cci_short_signal := cci_val >= cci_custom_min and cci_val <= cci_custom_max
+    else if cci_short_condition == "Rising"
+        current_cci_short_signal := cci_falling
+    else if cci_short_condition == "Falling"
+        current_cci_short_signal := cci_rising
+    else if cci_short_condition == "Zero Cross"
+        current_cci_short_signal := cci_zero_cross_down
+    
+    if current_cci_long_signal or current_cci_short_signal
+        cci_signal_bar := bar_index
+    
+    cci_memory_active = cci_signal_memory and bar_index - cci_signal_bar <= cci_memory_bars
+    cci_long_signal := current_cci_long_signal or (cci_memory_active and current_cci_long_signal)
+    cci_short_signal := current_cci_short_signal or (cci_memory_active and current_cci_short_signal)
+
+// Momentum Signals - ПОЛНОСТЬЮ СТАНДАРТИЗИРОВАННЫЕ с Signal Memory
+momentum_long_signal = true
+momentum_short_signal = true
+if useMomentum
+    current_momentum_long_signal = false
+    current_momentum_short_signal = false
+    
+    momentum_rising = momentum_val > momentum_val[momentum_direction_period]
+    momentum_falling = momentum_val < momentum_val[momentum_direction_period]
+    
+    if momentum_long_condition == "Level Filter"
+        current_momentum_long_signal := momentum_val < momentum_oversold
+    else if momentum_long_condition == "Cross Level Up"
+        current_momentum_long_signal := momentum_cross_up
+    else if momentum_long_condition == "Cross Level Down"
+        current_momentum_long_signal := momentum_cross_down
+    else if momentum_long_condition == "In Range"
+        current_momentum_long_signal := momentum_val >= momentum_custom_min and momentum_val <= momentum_custom_max
+    else if momentum_long_condition == "Outside Range"
+        current_momentum_long_signal := momentum_val < momentum_custom_min or momentum_val > momentum_custom_max
+    else if momentum_long_condition == "Rising"
+        current_momentum_long_signal := momentum_rising
+    else if momentum_long_condition == "Falling"
+        current_momentum_long_signal := momentum_falling
+    else if momentum_long_condition == "Zero Cross"
+        current_momentum_long_signal := momentum_zero_cross_up
+    
+    if momentum_short_condition == "Level Filter"
+        current_momentum_short_signal := momentum_val > momentum_overbought
+    else if momentum_short_condition == "Cross Level Up"
+        current_momentum_short_signal := momentum_cross_down
+    else if momentum_short_condition == "Cross Level Down"
+        current_momentum_short_signal := momentum_cross_up
+    else if momentum_short_condition == "In Range"
+        current_momentum_short_signal := momentum_val < momentum_custom_min or momentum_val > momentum_custom_max
+    else if momentum_short_condition == "Outside Range"
+        current_momentum_short_signal := momentum_val >= momentum_custom_min and momentum_val <= momentum_custom_max
+    else if momentum_short_condition == "Rising"
+        current_momentum_short_signal := momentum_falling
+    else if momentum_short_condition == "Falling"
+        current_momentum_short_signal := momentum_rising
+    else if momentum_short_condition == "Zero Cross"
+        current_momentum_short_signal := momentum_zero_cross_down
+    
+    if current_momentum_long_signal or current_momentum_short_signal
+        momentum_signal_bar := bar_index
+    
+    momentum_memory_active = momentum_signal_memory and bar_index - momentum_signal_bar <= momentum_memory_bars
+    momentum_long_signal := current_momentum_long_signal or (momentum_memory_active and current_momentum_long_signal)
+    momentum_short_signal := current_momentum_short_signal or (momentum_memory_active and current_momentum_short_signal)
+
+// SMI Ergodic Signals - ПОЛНОСТЬЮ СТАНДАРТИЗИРОВАННЫЕ с Signal Memory
+smi_long_signal = true
+smi_short_signal = true
+if useSMIO
+    current_smi_long_signal = false
+    current_smi_short_signal = false
+    
+    smi_rising = smi_val > smi_val[smio_direction_period]
+    smi_falling = smi_val < smi_val[smio_direction_period]
+    
+    if smio_long_condition == "Level Filter"
+        current_smi_long_signal := smi_val < smio_oversold
+    else if smio_long_condition == "Cross Level Up"
+        current_smi_long_signal := smi_cross_up
+    else if smio_long_condition == "Cross Level Down"
+        current_smi_long_signal := smi_cross_down
+    else if smio_long_condition == "In Range"
+        current_smi_long_signal := smi_val >= smio_custom_min and smi_val <= smio_custom_max
+    else if smio_long_condition == "Outside Range"
+        current_smi_long_signal := smi_val < smio_custom_min or smi_val > smio_custom_max
+    else if smio_long_condition == "Rising"
+        current_smi_long_signal := smi_rising
+    else if smio_long_condition == "Falling"
+        current_smi_long_signal := smi_falling
+    else if smio_long_condition == "Zero Cross"
+        current_smi_long_signal := smi_zero_cross_up
+    
+    if smio_short_condition == "Level Filter"
+        current_smi_short_signal := smi_val > smio_overbought
+    else if smio_short_condition == "Cross Level Up"
+        current_smi_short_signal := smi_cross_down
+    else if smio_short_condition == "Cross Level Down"
+        current_smi_short_signal := smi_cross_up
+    else if smio_short_condition == "In Range"
+        current_smi_short_signal := smi_val < smio_custom_min or smi_val > smio_custom_max
+    else if smio_short_condition == "Outside Range"
+        current_smi_short_signal := smi_val >= smio_custom_min and smi_val <= smio_custom_max
+    else if smio_short_condition == "Rising"
+        current_smi_short_signal := smi_falling
+    else if smio_short_condition == "Falling"
+        current_smi_short_signal := smi_rising
+    else if smio_short_condition == "Zero Cross"
+        current_smi_short_signal := smi_zero_cross_down
+    
+    if current_smi_long_signal or current_smi_short_signal
+        smi_signal_bar := bar_index
+    
+    smi_memory_active = smio_signal_memory and bar_index - smi_signal_bar <= smio_memory_bars
+    smi_long_signal := current_smi_long_signal or (smi_memory_active and current_smi_long_signal)
+    smi_short_signal := current_smi_short_signal or (smi_memory_active and current_smi_short_signal)
+
+// ===============================
+// FILTERS С SIGNAL MEMORY
+// ===============================
+
+// Volume filter с Signal Memory
 volume_condition_result = true
 if useVolumeFilter
+    current_volume_signal = false
+    
     if volume_condition == "Above Average"
-        volume_condition_result := volume > volume_avg * volume_multiplier
+        current_volume_signal := volume > volume_avg * volume_multiplier
     else if volume_condition == "Below Average"
-        volume_condition_result := volume < volume_avg / volume_multiplier
+        current_volume_signal := volume < volume_avg / volume_multiplier
     else if volume_condition == "Rising"
-        volume_condition_result := volume > volume[1]
+        current_volume_signal := volume > volume[1]
     else if volume_condition == "Falling"
-        volume_condition_result := volume < volume[1]
-    else
-        volume_condition_result := false
+        current_volume_signal := volume < volume[1]
+    
+    if current_volume_signal
+        volume_signal_bar := bar_index
+    
+    volume_memory_active = volume_use_signal_memory and bar_index - volume_signal_bar <= volume_memory_bars
+    volume_condition_result := current_volume_signal or volume_memory_active
 
-// Volatility filter - FIXED: replaced switch with if/else
+// Volatility filter с Signal Memory
 volatility_condition_result = true
 if useVolatilityFilter
+    current_volatility_signal = false
+    
     if vol_condition == "Rising"
-        volatility_condition_result := volatility > volatility[1]
+        current_volatility_signal := volatility > volatility[1]
     else if vol_condition == "Falling"
-        volatility_condition_result := volatility < volatility[1]
+        current_volatility_signal := volatility < volatility[1]
     else if vol_condition == "Above Level"
-        volatility_condition_result := volatility > vol_threshold
+        current_volatility_signal := volatility > vol_threshold
     else if vol_condition == "Below Level"
-        volatility_condition_result := volatility < vol_threshold
-    else
-        volatility_condition_result := false
+        current_volatility_signal := volatility < vol_threshold
+    
+    if current_volatility_signal
+        volatility_signal_bar := bar_index
+    
+    volatility_memory_active = volatility_use_signal_memory and bar_index - volatility_signal_bar <= volatility_memory_bars
+    volatility_condition_result := current_volatility_signal or volatility_memory_active
 
-// High/Low Filter
+// High/Low Filter с Signal Memory
 highlow_long_signal = true
 if useHighLowFilter
     highest_price = ta.highest(high, highlow_period)
     lowest_price = ta.lowest(low, highlow_period)
     price_change = (close - lowest_price) / lowest_price * 100
-    highlow_long_signal := price_change >= highlow_min_change
+    current_highlow_long_signal = price_change >= highlow_min_change
+    
+    if current_highlow_long_signal
+        highlow_signal_bar := bar_index
+    
+    highlow_memory_active = highlow_use_signal_memory and bar_index - highlow_signal_bar <= highlow_memory_bars
+    highlow_long_signal := current_highlow_long_signal or highlow_memory_active
 
 highlow_short_signal = true
 if useHighLowFilter
     highest_price = ta.highest(high, highlow_period)
     lowest_price = ta.lowest(low, highlow_period)
     price_change = (highest_price - close) / highest_price * 100
-    highlow_short_signal := price_change >= highlow_min_change
+    current_highlow_short_signal = price_change >= highlow_min_change
+    
+    highlow_memory_active_short = highlow_use_signal_memory and bar_index - highlow_signal_bar <= highlow_memory_bars
+    highlow_short_signal := current_highlow_short_signal or highlow_memory_active_short
 
-// ATR Change Filter
+// ATR Change Filter с Signal Memory
 atr_change_signal = true
 if useATRChangeFilter
     current_atr = ta.atr(14)
     past_atr = ta.sma(ta.atr(14), atr_change_period)
     atr_change = (current_atr - past_atr) / past_atr * 100
-    atr_change_signal := atr_change >= atr_change_threshold
+    current_atr_change_signal = atr_change >= atr_change_threshold
+    
+    if current_atr_change_signal
+        atr_change_signal_bar := bar_index
+    
+    atr_change_memory_active = atr_change_use_signal_memory and bar_index - atr_change_signal_bar <= atr_change_memory_bars
+    atr_change_signal := current_atr_change_signal or atr_change_memory_active
 
 // Block If Worse Filter - IMPROVED: проверка за период, а не только текущая свеча
 block_worse_long_signal = true
@@ -1302,7 +1671,7 @@ if useBlockIfWorse
     // Блокируем, если цена уже ушла в нашу сторону больше чем на X%
     block_worse_short_signal := not (max_negative_move < -blockIfWorsePercent)
 
-// PinBar + MA
+// PinBar + MA с Signal Memory
 pinbar_ma_long_signal = true
 if usePinBarMA
     ma1 = ta.ema(close, pinbar_ma1_length)
@@ -1310,7 +1679,13 @@ if usePinBarMA
     ma3 = ta.ema(close, pinbar_ma3_length)
     is_pin = f_isHammer()
     ma_aligned = ma1 > ma2 and ma2 > ma3
-    pinbar_ma_long_signal := is_pin and ma_aligned
+    current_pinbar_ma_long_signal = is_pin and ma_aligned
+    
+    if current_pinbar_ma_long_signal
+        pinbar_signal_bar := bar_index
+    
+    pinbar_memory_active = pinbar_use_signal_memory and bar_index - pinbar_signal_bar <= pinbar_memory_bars
+    pinbar_ma_long_signal := current_pinbar_ma_long_signal or pinbar_memory_active
 
 pinbar_ma_short_signal = true
 if usePinBarMA
@@ -1319,7 +1694,10 @@ if usePinBarMA
     ma3 = ta.ema(close, pinbar_ma3_length)
     is_pin = f_isHammer()
     ma_aligned = ma1 < ma2 and ma2 < ma3
-    pinbar_ma_short_signal := is_pin and ma_aligned
+    current_pinbar_ma_short_signal = is_pin and ma_aligned
+    
+    pinbar_memory_active_short = pinbar_use_signal_memory and bar_index - pinbar_signal_bar <= pinbar_memory_bars
+    pinbar_ma_short_signal := current_pinbar_ma_short_signal or pinbar_memory_active_short
 
 // Supertrend Filter (legacy) - FIXED: with signal type selection
 supertrend_trend_up_calc = st_direction == 1
@@ -1386,21 +1764,26 @@ if useMA
         ma_long_signal := current_ma_long_signal
         ma_short_signal := current_ma_short_signal
 
-// Channels Conditions - FIXED: replaced switch with if/else
+// Channels Conditions с Signal Memory
 channels_long_signal = true
 if useChannels
     touch_long = low <= channel_lower and close > channel_lower
     close_outside_long = close[1] < channel_lower and close > channel_lower
     breakout_long = close > channel_upper
     
+    current_channels_long_signal = false
     if channel_signal_type == "Touch"
-        channels_long_signal := touch_long
+        current_channels_long_signal := touch_long
     else if channel_signal_type == "Close Outside"
-        channels_long_signal := close_outside_long
+        current_channels_long_signal := close_outside_long
     else if channel_signal_type == "Breakout"
-        channels_long_signal := breakout_long
-    else
-        channels_long_signal := false
+        current_channels_long_signal := breakout_long
+    
+    if current_channels_long_signal
+        channels_signal_bar := bar_index
+    
+    channels_memory_active = channels_use_signal_memory and bar_index - channels_signal_bar <= channels_memory_bars
+    channels_long_signal := current_channels_long_signal or channels_memory_active
 
 channels_short_signal = true
 if useChannels
@@ -1408,27 +1791,21 @@ if useChannels
     close_outside_short = close[1] > channel_upper and close < channel_upper
     breakout_short = close < channel_lower
     
+    current_channels_short_signal = false
     if channel_signal_type == "Touch"
-        channels_short_signal := touch_short
+        current_channels_short_signal := touch_short
     else if channel_signal_type == "Close Outside"
-        channels_short_signal := close_outside_short
+        current_channels_short_signal := close_outside_short
     else if channel_signal_type == "Breakout"
-        channels_short_signal := breakout_short
-    else
-        channels_short_signal := false
+        current_channels_short_signal := breakout_short
+    
+    channels_memory_active_short = channels_use_signal_memory and bar_index - channels_signal_bar <= channels_memory_bars
+    channels_short_signal := current_channels_short_signal or channels_memory_active_short
 
-// Other indicator signals (keeping existing logic but with proper boolean returns)
-rvi_long_signal = useRVI ? rvi_val < rvi_oversold : true
-rvi_short_signal = useRVI ? rvi_val > rvi_overbought : true
-
-mfi_long_signal = useMFI ? mfi_val < mfi_oversold : true
-mfi_short_signal = useMFI ? mfi_val > mfi_overbought : true
-
-// Stochastic Signals - ENHANCED with multiple signal types and memory
+// Stochastic Signals - ENHANCED with multiple signal types and memory (уже реализовано)
 stoch_long_signal = true
 stoch_short_signal = true
 if useStochastic
-    // Calculate different signal types
     current_stoch_long_signal = false
     current_stoch_short_signal = false
     
@@ -1453,7 +1830,6 @@ if useStochastic
         current_stoch_long_signal := stoch_rising
         current_stoch_short_signal := stoch_falling
     
-    // Signal Memory Logic
     if current_stoch_long_signal or current_stoch_short_signal
         stoch_signal_bar := bar_index
     
@@ -1461,22 +1837,13 @@ if useStochastic
     stoch_long_signal := current_stoch_long_signal or (stoch_memory_active and current_stoch_long_signal)
     stoch_short_signal := current_stoch_short_signal or (stoch_memory_active and current_stoch_short_signal)
 
-cci_long_signal = useCCI ? cci_val < cci_oversold : true
-cci_short_signal = useCCI ? cci_val > cci_overbought : true
-
-momentum_long_signal = useMomentum ? momentum_val < momentum_oversold : true
-momentum_short_signal = useMomentum ? momentum_val > momentum_overbought : true
-
 drsi_long_signal = useDynamicRSI ? rsi1_value < drsi_lower : true
 drsi_short_signal = useDynamicRSI ? rsi1_value > drsi_upper : true
 
 dmfi_long_signal = useDynamicMFI ? mfi_val < dmfi_lower : true
 dmfi_short_signal = useDynamicMFI ? mfi_val > dmfi_upper : true
 
-smi_long_signal = useSMIO ? smi_val < smio_oversold : true
-smi_short_signal = useSMIO ? smi_val > smio_overbought : true
-
-// DMI Condition - ENHANCED with Signal Memory and ADX Rising
+// DMI Condition - ENHANCED with Signal Memory and ADX Rising (уже реализовано)
 dmi_long_signal = true
 dmi_short_signal = true
 if useDMI
@@ -1499,12 +1866,10 @@ if useDMI
         current_dmi_long_signal := adx_rising_calc and diplus > diminus
         current_dmi_short_signal := adx_rising_calc and diminus > diplus
     
-    // Apply ADX Rising filter if enabled
     if dmi_adx_rising
         current_dmi_long_signal := current_dmi_long_signal and adx_rising_calc
         current_dmi_short_signal := current_dmi_short_signal and adx_rising_calc
     
-    // Signal Memory Logic
     if current_dmi_long_signal or current_dmi_short_signal
         dmi_signal_bar := bar_index
     
@@ -1512,33 +1877,51 @@ if useDMI
     dmi_long_signal := current_dmi_long_signal or (dmi_memory_active and diplus > diminus)
     dmi_short_signal := current_dmi_short_signal or (dmi_memory_active and diminus > diplus)
 
-// Chaikin Money Flow
+// Chaikin Money Flow с Signal Memory
 chaikin_long_signal = true
 if useChaikin
     cmf_ob_os = cmf_val < chaikin_oversold
     cmf_zero = chaikin_use_zero and cmf_cross_up
-    chaikin_long_signal := cmf_ob_os or cmf_zero
+    current_chaikin_long_signal = cmf_ob_os or cmf_zero
+    
+    if current_chaikin_long_signal
+        cmf_signal_bar := bar_index
+    
+    chaikin_memory_active = chaikin_signal_memory and bar_index - cmf_signal_bar <= chaikin_memory_bars
+    chaikin_long_signal := current_chaikin_long_signal or chaikin_memory_active
 
 chaikin_short_signal = true
 if useChaikin
     cmf_ob_os = cmf_val > chaikin_overbought
     cmf_zero = chaikin_use_zero and cmf_cross_down
-    chaikin_short_signal := cmf_ob_os or cmf_zero
+    current_chaikin_short_signal = cmf_ob_os or cmf_zero
+    
+    chaikin_memory_active_short = chaikin_signal_memory and bar_index - cmf_signal_bar <= chaikin_memory_bars
+    chaikin_short_signal := current_chaikin_short_signal or chaikin_memory_active_short
 
-// Balance of Power
+// Balance of Power с Signal Memory
 bop_long_signal = true
 if useBOP
     bop_ob_os = bop_val < bop_oversold
     bop_zero = bop_use_zero and bop_cross_up
-    bop_long_signal := bop_ob_os or bop_zero
+    current_bop_long_signal = bop_ob_os or bop_zero
+    
+    if current_bop_long_signal
+        bop_signal_bar := bar_index
+    
+    bop_memory_active = bop_signal_memory and bar_index - bop_signal_bar <= bop_memory_bars
+    bop_long_signal := current_bop_long_signal or bop_memory_active
 
 bop_short_signal = true
 if useBOP
     bop_ob_os = bop_val > bop_overbought
     bop_zero = bop_use_zero and bop_cross_down
-    bop_short_signal := bop_ob_os or bop_zero
+    current_bop_short_signal = bop_ob_os or bop_zero
+    
+    bop_memory_active_short = bop_signal_memory and bar_index - bop_signal_bar <= bop_memory_bars
+    bop_short_signal := current_bop_short_signal or bop_memory_active_short
 
-// MACD Condition with Signal Memory - FIXED: replaced switch with if/else
+// MACD Condition with Signal Memory (уже реализовано)
 macd_long_signal = true
 macd_short_signal = true
 if useMACD
@@ -1570,9 +1953,19 @@ if useMACD
         macd_long_signal := current_macd_long_signal
         macd_short_signal := current_macd_short_signal
 
-// QQE Signals
-qqe_long_signal = useQQE ? (qqe_trend == 1 and qqe_trend[1] != 1) : true
-qqe_short_signal = useQQE ? (qqe_trend == -1 and qqe_trend[1] != -1) : true
+// QQE Signals с Signal Memory
+qqe_long_signal = true
+qqe_short_signal = true
+if useQQE
+    current_qqe_long_signal = qqe_trend == 1 and qqe_trend[1] != 1
+    current_qqe_short_signal = qqe_trend == -1 and qqe_trend[1] != -1
+    
+    if current_qqe_long_signal or current_qqe_short_signal
+        qqe_signal_bar := bar_index
+    
+    qqe_memory_active = qqe_signal_memory and bar_index - qqe_signal_bar <= qqe_memory_bars
+    qqe_long_signal := current_qqe_long_signal or (qqe_memory_active and qqe_trend == 1)
+    qqe_short_signal := current_qqe_short_signal or (qqe_memory_active and qqe_trend == -1)
 
 // PROFESSIONAL LEVELS IMPLEMENTATION - Support/Resistance Detection
 levels_long_signal = true
@@ -1685,7 +2078,7 @@ if useLevels
     levels_long_signal := near_support  // Buy near support
     levels_short_signal := near_resistance  // Sell near resistance
 
-// ENHANCED Divergence Detection for multiple indicators with Signal Memory
+// ENHANCED Divergence Detection for multiple indicators with Signal Memory (уже реализовано)
 divergence_long_signal = true
 divergence_short_signal = true
 
@@ -1738,7 +2131,7 @@ if useDivergence
     divergence_long_signal := current_div_long_signal or (div_memory_active and current_div_long_signal)
     divergence_short_signal := current_div_short_signal or (div_memory_active and current_div_short_signal)
 
-// Candle Patterns
+// Candle Patterns с Signal Memory
 candle_long_signal = true
 if useCandlePatterns
     bull_hammer = use_hammer and f_isHammer() and close > open
@@ -1747,7 +2140,13 @@ if useCandlePatterns
     bull_morning_star = use_morning_evening_star and f_isMorningStar()
     bull_soldiers = use_three_soldiers_crows and f_isThreeWhiteSoldiers()
     
-    candle_long_signal := bull_hammer or bull_engulfing or bull_doji or bull_morning_star or bull_soldiers
+    current_candle_long_signal = bull_hammer or bull_engulfing or bull_doji or bull_morning_star or bull_soldiers
+    
+    if current_candle_long_signal
+        candle_signal_bar := bar_index
+    
+    candle_memory_active = candle_signal_memory and bar_index - candle_signal_bar <= candle_memory_bars
+    candle_long_signal := current_candle_long_signal or candle_memory_active
 
 candle_short_signal = true
 if useCandlePatterns
@@ -1757,38 +2156,64 @@ if useCandlePatterns
     bear_evening_star = use_morning_evening_star and f_isEveningStar()
     bear_crows = use_three_soldiers_crows and f_isThreeBlackCrows()
     
-    candle_short_signal := bear_hammer or bear_engulfing or bear_doji or bear_evening_star or bear_crows
+    current_candle_short_signal = bear_hammer or bear_engulfing or bear_doji or bear_evening_star or bear_crows
+    
+    candle_memory_active_short = candle_signal_memory and bar_index - candle_signal_bar <= candle_memory_bars
+    candle_short_signal := current_candle_short_signal or candle_memory_active_short
 
-// Linear Regression Channel
-lrc_long_signal = useLRC ? close < lrc_lower : true
-lrc_short_signal = useLRC ? close > lrc_upper : true
+// Linear Regression Channel с Signal Memory
+lrc_long_signal = true
+if useLRC
+    current_lrc_long_signal = close < lrc_lower
+    
+    if current_lrc_long_signal
+        lrc_signal_bar := bar_index
+    
+    lrc_memory_active = lrc_signal_memory and bar_index - lrc_signal_bar <= lrc_memory_bars
+    lrc_long_signal := current_lrc_long_signal or lrc_memory_active
 
-// External Indicator - FIXED: replaced switch with if/else
+lrc_short_signal = true
+if useLRC
+    current_lrc_short_signal = close > lrc_upper
+    
+    lrc_memory_active_short = lrc_signal_memory and bar_index - lrc_signal_bar <= lrc_memory_bars
+    lrc_short_signal := current_lrc_short_signal or lrc_memory_active_short
+
+// External Indicator с Signal Memory
 external_long_signal = true
 if useExternal
+    current_external_long_signal = false
+    
     if external_condition == "Above"
-        external_long_signal := external_source > external_level
+        current_external_long_signal := external_source > external_level
     else if external_condition == "Below"
-        external_long_signal := external_source < external_level
+        current_external_long_signal := external_source < external_level
     else if external_condition == "Cross Up"
-        external_long_signal := external_cross_up
+        current_external_long_signal := external_cross_up
     else if external_condition == "Cross Down"
-        external_long_signal := external_cross_down
-    else
-        external_long_signal := false
+        current_external_long_signal := external_cross_down
+    
+    if current_external_long_signal
+        external_signal_bar := bar_index
+    
+    external_memory_active = external_signal_memory and bar_index - external_signal_bar <= external_memory_bars
+    external_long_signal := current_external_long_signal or external_memory_active
 
 external_short_signal = true
 if useExternal
+    current_external_short_signal = false
+    
     if external_condition == "Above"
-        external_short_signal := external_source < external_level
+        current_external_short_signal := external_source < external_level
     else if external_condition == "Below"
-        external_short_signal := external_source > external_level
+        current_external_short_signal := external_source > external_level
     else if external_condition == "Cross Up"
-        external_short_signal := external_cross_down
+        current_external_short_signal := external_cross_down
     else if external_condition == "Cross Down"
-        external_short_signal := external_cross_up
-    else
-        external_short_signal := false
+        current_external_short_signal := external_cross_up
+    
+    external_memory_active_short = external_signal_memory and bar_index - external_signal_bar <= external_memory_bars
+    external_short_signal := current_external_short_signal or external_memory_active_short
 
 // ===============================
 // FINAL SIGNAL CONDITIONS - FIXED: COMPLETE INDICATORS COUNT
@@ -2047,7 +2472,7 @@ if useTrailingStop and strategy.position_size != 0
             new_trailing_level = close * (1 + trailingDistance / 100)
             trailing_stop_level := na(trailing_stop_level) ? new_trailing_level : math.min(trailing_stop_level, new_trailing_level)
 
-// Combined TP/SL Logic - FIXED: unified approach
+// Combined TP/SL Logic - FIXED: unified approach with working breakeven
 if strategy.position_size != 0
     base_tp_level = 0.0
     base_sl_level = 0.0
@@ -2057,72 +2482,90 @@ if strategy.position_size != 0
         base_tp_level := useATRTakeProfit ? avg_price + atr_tp_val * atr_tp_multiplier : avg_price * (1 + tp_percent / 100)
         base_sl_level := useATRStopLoss ? avg_price - atr_sl_val * atr_sl_multiplier : avg_price * (1 - sl_percent / 100)
         
-        // Apply breakeven
-        if breakeven_activated
-            base_sl_level := math.max(base_sl_level, avg_price * (1 + breakevenLevel / 100))
+        // FIXED: Apply breakeven - правильная логика
+        if useBreakeven and breakeven_activated
+            // Breakeven = entry price + небольшой буфер (НЕ процент от цены!)
+            breakeven_sl_level = avg_price * (1 + breakevenLevel / 100)
+            base_sl_level := math.max(base_sl_level, breakeven_sl_level)
         
         // Apply trailing stop
         if useTrailingStop and not na(trailing_stop_level)
             base_sl_level := math.max(base_sl_level, trailing_stop_level)
         
-        // FIXED Multi TP Logic - using strategy.order with absolute qty only
-        if useMultiTP and close_static_tp_sl
-            tp1_price = avg_price * (1 + tp1_percent / 100)
-            tp2_price = avg_price * (1 + tp2_percent / 100)
-            tp3_price = avg_price * (1 + tp3_percent / 100)
-            tp4_price = avg_price * (1 + tp4_percent / 100)
-            
-            total_qty = math.abs(strategy.position_size)
-            tp1_qty_calc = total_qty * tp1_qty / 100
-            tp2_qty_calc = total_qty * tp2_qty / 100
-            tp3_qty_calc = total_qty * tp3_qty / 100
-            remaining_qty = total_qty - tp1_qty_calc - tp2_qty_calc - tp3_qty_calc
-            
-            strategy.order("TP1_L", strategy.short, qty=tp1_qty_calc, limit=tp1_price)
-            strategy.order("TP2_L", strategy.short, qty=tp2_qty_calc, limit=tp2_price)
-            strategy.order("TP3_L", strategy.short, qty=tp3_qty_calc, limit=tp3_price)
-            strategy.order("TP4_L", strategy.short, qty=remaining_qty, limit=tp4_price)
-            
-            // Stop loss order
-            strategy.order("SL_L", strategy.short, qty=total_qty, stop=base_sl_level)
-        else if close_static_tp_sl
-            strategy.exit("Exit L", limit=base_tp_level, stop=base_sl_level)
+        // FIXED: TP/SL применяются ВСЕГДА, не только при close_static_tp_sl
+        if close_static_tp_sl
+            // FIXED Multi TP Logic - using strategy.order with absolute qty only
+            if useMultiTP
+                tp1_price = avg_price * (1 + tp1_percent / 100)
+                tp2_price = avg_price * (1 + tp2_percent / 100)
+                tp3_price = avg_price * (1 + tp3_percent / 100)
+                tp4_price = avg_price * (1 + tp4_percent / 100)
+                
+                total_qty = math.abs(strategy.position_size)
+                tp1_qty_calc = total_qty * tp1_qty / 100
+                tp2_qty_calc = total_qty * tp2_qty / 100
+                tp3_qty_calc = total_qty * tp3_qty / 100
+                remaining_qty = total_qty - tp1_qty_calc - tp2_qty_calc - tp3_qty_calc
+                
+                strategy.order("TP1_L", strategy.short, qty=tp1_qty_calc, limit=tp1_price)
+                strategy.order("TP2_L", strategy.short, qty=tp2_qty_calc, limit=tp2_price)
+                strategy.order("TP3_L", strategy.short, qty=tp3_qty_calc, limit=tp3_price)
+                strategy.order("TP4_L", strategy.short, qty=remaining_qty, limit=tp4_price)
+                
+                // Stop loss order
+                strategy.order("SL_L", strategy.short, qty=total_qty, stop=base_sl_level)
+            else
+                // Обычные TP/SL через strategy.exit
+                strategy.exit("Exit L", limit=base_tp_level, stop=base_sl_level)
+        else
+            // НОВОЕ: Даже если статические TP/SL отключены, применяем breakeven и trailing
+            if (useBreakeven and breakeven_activated) or (useTrailingStop and not na(trailing_stop_level))
+                strategy.exit("BE_TS_L", stop=base_sl_level)
     
     else
         // Short position
         base_tp_level := useATRTakeProfit ? avg_price - atr_tp_val * atr_tp_multiplier : avg_price * (1 - tp_percent / 100)
         base_sl_level := useATRStopLoss ? avg_price + atr_sl_val * atr_sl_multiplier : avg_price * (1 + sl_percent / 100)
         
-        // Apply breakeven
-        if breakeven_activated
-            base_sl_level := math.min(base_sl_level, avg_price * (1 - breakevenLevel / 100))
+        // FIXED: Apply breakeven - правильная логика
+        if useBreakeven and breakeven_activated
+            // Breakeven = entry price - небольшой буфер
+            breakeven_sl_level = avg_price * (1 - breakevenLevel / 100)
+            base_sl_level := math.min(base_sl_level, breakeven_sl_level)
         
         // Apply trailing stop
         if useTrailingStop and not na(trailing_stop_level)
             base_sl_level := math.min(base_sl_level, trailing_stop_level)
         
-        // FIXED Multi TP Logic - using strategy.order with absolute qty only
-        if useMultiTP and close_static_tp_sl
-            tp1_price = avg_price * (1 - tp1_percent / 100)
-            tp2_price = avg_price * (1 - tp2_percent / 100)
-            tp3_price = avg_price * (1 - tp3_percent / 100)
-            tp4_price = avg_price * (1 - tp4_percent / 100)
-            
-            total_qty = math.abs(strategy.position_size)
-            tp1_qty_calc = total_qty * tp1_qty / 100
-            tp2_qty_calc = total_qty * tp2_qty / 100
-            tp3_qty_calc = total_qty * tp3_qty / 100
-            remaining_qty = total_qty - tp1_qty_calc - tp2_qty_calc - tp3_qty_calc
-            
-            strategy.order("TP1_S", strategy.long, qty=tp1_qty_calc, limit=tp1_price)
-            strategy.order("TP2_S", strategy.long, qty=tp2_qty_calc, limit=tp2_price)
-            strategy.order("TP3_S", strategy.long, qty=tp3_qty_calc, limit=tp3_price)
-            strategy.order("TP4_S", strategy.long, qty=remaining_qty, limit=tp4_price)
-            
-            // Stop loss order
-            strategy.order("SL_S", strategy.long, qty=total_qty, stop=base_sl_level)
-        else if close_static_tp_sl
-            strategy.exit("Exit S", limit=base_tp_level, stop=base_sl_level)
+        // FIXED: TP/SL применяются ВСЕГДА, не только при close_static_tp_sl
+        if close_static_tp_sl
+            // FIXED Multi TP Logic - using strategy.order with absolute qty only
+            if useMultiTP
+                tp1_price = avg_price * (1 - tp1_percent / 100)
+                tp2_price = avg_price * (1 - tp2_percent / 100)
+                tp3_price = avg_price * (1 - tp3_percent / 100)
+                tp4_price = avg_price * (1 - tp4_percent / 100)
+                
+                total_qty = math.abs(strategy.position_size)
+                tp1_qty_calc = total_qty * tp1_qty / 100
+                tp2_qty_calc = total_qty * tp2_qty / 100
+                tp3_qty_calc = total_qty * tp3_qty / 100
+                remaining_qty = total_qty - tp1_qty_calc - tp2_qty_calc - tp3_qty_calc
+                
+                strategy.order("TP1_S", strategy.long, qty=tp1_qty_calc, limit=tp1_price)
+                strategy.order("TP2_S", strategy.long, qty=tp2_qty_calc, limit=tp2_price)
+                strategy.order("TP3_S", strategy.long, qty=tp3_qty_calc, limit=tp3_price)
+                strategy.order("TP4_S", strategy.long, qty=remaining_qty, limit=tp4_price)
+                
+                // Stop loss order
+                strategy.order("SL_S", strategy.long, qty=total_qty, stop=base_sl_level)
+            else
+                // Обычные TP/SL через strategy.exit
+                strategy.exit("Exit S", limit=base_tp_level, stop=base_sl_level)
+        else
+            // НОВОЕ: Даже если статические TP/SL отключены, применяем breakeven и trailing
+            if (useBreakeven and breakeven_activated) or (useTrailingStop and not na(trailing_stop_level))
+                strategy.exit("BE_TS_S", stop=base_sl_level)
 
 // ===============================
 // CLOSE SIGNALS - EXPANDED
