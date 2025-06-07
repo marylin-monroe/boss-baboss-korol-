@@ -27,7 +27,7 @@ export_button = input.bool(false, "Generate Export String", group=csv_group)
 // ===============================
 // HELPER FUNCTIONS
 // ===============================
-// Enhanced Moving Average Function - FIXED: complex case expressions require if/else structure
+// Enhanced Moving Average Function
 ma_function(src, length, ma_type) =>
     result = 0.0
     if ma_type == "SMA"
@@ -116,6 +116,7 @@ closeOnlyInProfit = input.bool(false, "Close only in Profit. (Used only for \"Cl
 // Reverse Orders
 useReverseOrderOnSL = input.bool(false, "Reverse order on SL", group=tpsl_group)
 useReverseOrderOnBE = input.bool(false, "Reverse order on BE", group=tpsl_group)
+reverse_qty_percent = input.int(100, "Reverse Order Size (%)", minval=10, maxval=200, group=tpsl_group)
 
 // ===============================
 // BREAKEVEN SETTINGS
@@ -229,6 +230,7 @@ st_group = "═══════════ Supertrend ═══════�
 useSupertrend = input.bool(false, "Use Supertrend Filter", group=st_group)
 supertrend_period = input.int(10, "Supertrend Period", minval=1, maxval=50, group=st_group)
 supertrend_factor = input.float(3.0, "Supertrend Factor", minval=0.5, maxval=10.0, step=0.1, group=st_group)
+st_signal_type = input.string("Trend Filter", "SuperTrend Signal Type", options=["Trend Change", "Trend Filter"], group=st_group)
 
 // ===============================
 // CONSOLIDATION ZONES
@@ -270,30 +272,39 @@ useRSI1 = input.bool(false, "Use RSI #1", group=rsi_group)
 rsi1_length = input.int(14, "RSI #1 Length", minval=2, maxval=100, group=rsi_group)
 rsi1_overbought = input.float(70, "RSI #1 Overbought", minval=50, maxval=90, group=rsi_group)
 rsi1_oversold = input.float(30, "RSI #1 Oversold", minval=10, maxval=50, group=rsi_group)
-rsi1_condition = input.string("Oversold", "RSI #1 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up"], group=rsi_group)
+rsi1_condition = input.string("Oversold", "RSI #1 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up", "Cross Level Down", "Rising/Falling"], group=rsi_group)
 rsi1_custom_min = input.float(30, "RSI #1 Custom Min", minval=0, maxval=100, group=rsi_group)
 rsi1_custom_max = input.float(70, "RSI #1 Custom Max", minval=0, maxval=100, group=rsi_group)
 rsi1_use_btc_source = input.bool(false, "RSI #1 Use BTCUSDT Source", group=rsi_group)
+rsi1_signal_memory = input.bool(false, "RSI #1 Signal Memory", group=rsi_group)
+rsi1_memory_bars = input.int(5, "RSI #1 Memory Bars", minval=1, maxval=20, group=rsi_group)
+rsi1_direction_period = input.int(3, "RSI #1 Direction Period", minval=1, maxval=10, group=rsi_group)
 
 // RSI 2
 useRSI2 = input.bool(false, "Use RSI #2", group=rsi_group)
 rsi2_length = input.int(21, "RSI #2 Length", minval=2, maxval=100, group=rsi_group)
 rsi2_overbought = input.float(75, "RSI #2 Overbought", minval=50, maxval=90, group=rsi_group)
 rsi2_oversold = input.float(25, "RSI #2 Oversold", minval=10, maxval=50, group=rsi_group)
-rsi2_condition = input.string("Oversold", "RSI #2 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up"], group=rsi_group)
+rsi2_condition = input.string("Oversold", "RSI #2 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up", "Cross Level Down", "Rising/Falling"], group=rsi_group)
 rsi2_custom_min = input.float(25, "RSI #2 Custom Min", minval=0, maxval=100, group=rsi_group)
 rsi2_custom_max = input.float(75, "RSI #2 Custom Max", minval=0, maxval=100, group=rsi_group)
 rsi2_use_btc_source = input.bool(false, "RSI #2 Use BTCUSDT Source", group=rsi_group)
+rsi2_signal_memory = input.bool(false, "RSI #2 Signal Memory", group=rsi_group)
+rsi2_memory_bars = input.int(5, "RSI #2 Memory Bars", minval=1, maxval=20, group=rsi_group)
+rsi2_direction_period = input.int(3, "RSI #2 Direction Period", minval=1, maxval=10, group=rsi_group)
 
 // RSI 3
 useRSI3 = input.bool(false, "Use RSI #3", group=rsi_group)
 rsi3_length = input.int(7, "RSI #3 Length", minval=2, maxval=100, group=rsi_group)
 rsi3_overbought = input.float(80, "RSI #3 Overbought", minval=50, maxval=90, group=rsi_group)
 rsi3_oversold = input.float(20, "RSI #3 Oversold", minval=10, maxval=50, group=rsi_group)
-rsi3_condition = input.string("Oversold", "RSI #3 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up"], group=rsi_group)
+rsi3_condition = input.string("Oversold", "RSI #3 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up", "Cross Level Down", "Rising/Falling"], group=rsi_group)
 rsi3_custom_min = input.float(20, "RSI #3 Custom Min", minval=0, maxval=100, group=rsi_group)
 rsi3_custom_max = input.float(80, "RSI #3 Custom Max", minval=0, maxval=100, group=rsi_group)
 rsi3_use_btc_source = input.bool(false, "RSI #3 Use BTCUSDT Source", group=rsi_group)
+rsi3_signal_memory = input.bool(false, "RSI #3 Signal Memory", group=rsi_group)
+rsi3_memory_bars = input.int(5, "RSI #3 Memory Bars", minval=1, maxval=20, group=rsi_group)
+rsi3_direction_period = input.int(3, "RSI #3 Direction Period", minval=1, maxval=10, group=rsi_group)
 
 // ===============================
 // SUPERTREND EXPANDED (3 instances)
@@ -304,18 +315,27 @@ useST1 = input.bool(false, "Use SuperTrend #1", group=st_expanded_group)
 st1_period = input.int(10, "ST #1 Period", minval=1, maxval=50, group=st_expanded_group)
 st1_factor = input.float(3.0, "ST #1 Factor", minval=0.5, maxval=10.0, step=0.1, group=st_expanded_group)
 st1_use_btc_source = input.bool(false, "ST #1 Use BTCUSDT Source", group=st_expanded_group)
+st1_signal_type = input.string("Trend Filter", "ST #1 Signal Type", options=["Trend Change", "Trend Filter"], group=st_expanded_group)
+st1_signal_memory = input.bool(false, "ST #1 Signal Memory", group=st_expanded_group)
+st1_memory_bars = input.int(5, "ST #1 Memory Bars", minval=1, maxval=20, group=st_expanded_group)
 
 // ST 2
 useST2 = input.bool(false, "Use SuperTrend #2", group=st_expanded_group)
 st2_period = input.int(14, "ST #2 Period", minval=1, maxval=50, group=st_expanded_group)
 st2_factor = input.float(2.5, "ST #2 Factor", minval=0.5, maxval=10.0, step=0.1, group=st_expanded_group)
 st2_use_btc_source = input.bool(false, "ST #2 Use BTCUSDT Source", group=st_expanded_group)
+st2_signal_type = input.string("Trend Filter", "ST #2 Signal Type", options=["Trend Change", "Trend Filter"], group=st_expanded_group)
+st2_signal_memory = input.bool(false, "ST #2 Signal Memory", group=st_expanded_group)
+st2_memory_bars = input.int(5, "ST #2 Memory Bars", minval=1, maxval=20, group=st_expanded_group)
 
 // ST 3
 useST3 = input.bool(false, "Use SuperTrend #3", group=st_expanded_group)
 st3_period = input.int(21, "ST #3 Period", minval=1, maxval=50, group=st_expanded_group)
 st3_factor = input.float(2.0, "ST #3 Factor", minval=0.5, maxval=10.0, step=0.1, group=st_expanded_group)
 st3_use_btc_source = input.bool(false, "ST #3 Use BTCUSDT Source", group=st_expanded_group)
+st3_signal_type = input.string("Trend Filter", "ST #3 Signal Type", options=["Trend Change", "Trend Filter"], group=st_expanded_group)
+st3_signal_memory = input.bool(false, "ST #3 Signal Memory", group=st_expanded_group)
+st3_memory_bars = input.int(5, "ST #3 Memory Bars", minval=1, maxval=20, group=st_expanded_group)
 
 // ===============================
 // RVI SETTINGS
@@ -325,6 +345,10 @@ useRVI = input.bool(false, "Use RVI", group=rvi_group)
 rvi_length = input.int(10, "RVI Length", minval=2, maxval=100, group=rvi_group)
 rvi_overbought = input.float(0.4, "RVI Overbought", minval=0.1, maxval=0.9, step=0.1, group=rvi_group)
 rvi_oversold = input.float(-0.4, "RVI Oversold", minval=-0.9, maxval=-0.1, step=0.1, group=rvi_group)
+rvi_signal_type = input.string("Level Filter", "RVI Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling", "Zero Cross"], group=rvi_group)
+rvi_signal_memory = input.bool(false, "RVI Signal Memory", group=rvi_group)
+rvi_memory_bars = input.int(5, "RVI Memory Bars", minval=1, maxval=20, group=rvi_group)
+rvi_direction_period = input.int(3, "RVI Direction Period", minval=1, maxval=10, group=rvi_group)
 
 // ===============================
 // MFI SETTINGS
@@ -334,6 +358,10 @@ useMFI = input.bool(false, "Use MFI", group=mfi_group)
 mfi_length = input.int(14, "MFI Length", minval=2, maxval=100, group=mfi_group)
 mfi_overbought = input.float(80, "MFI Overbought", minval=50, maxval=90, group=mfi_group)
 mfi_oversold = input.float(20, "MFI Oversold", minval=10, maxval=50, group=mfi_group)
+mfi_signal_type = input.string("Level Filter", "MFI Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling"], group=mfi_group)
+mfi_signal_memory = input.bool(false, "MFI Signal Memory", group=mfi_group)
+mfi_memory_bars = input.int(5, "MFI Memory Bars", minval=1, maxval=20, group=mfi_group)
+mfi_direction_period = input.int(3, "MFI Direction Period", minval=1, maxval=10, group=mfi_group)
 
 // ===============================
 // STOCHASTIC SETTINGS
@@ -345,6 +373,10 @@ stoch_k_smooth = input.int(1, "Stochastic %K Smoothing", minval=1, maxval=10, gr
 stoch_d_smooth = input.int(3, "Stochastic %D Smoothing", minval=1, maxval=10, group=stoch_group)
 stoch_overbought = input.float(80, "Stochastic Overbought", minval=50, maxval=100, group=stoch_group)
 stoch_oversold = input.float(20, "Stochastic Oversold", minval=0, maxval=50, group=stoch_group)
+stoch_signal_type = input.string("Oversold Cross", "Stochastic Signal Type", options=["Oversold Cross", "Overbought Cross", "K-D Cross", "Level Filter", "Rising/Falling"], group=stoch_group)
+stoch_signal_memory = input.bool(false, "Stochastic Signal Memory", group=stoch_group)
+stoch_memory_bars = input.int(5, "Stochastic Memory Bars", minval=1, maxval=20, group=stoch_group)
+stoch_direction_period = input.int(3, "Stochastic Direction Period", minval=1, maxval=10, group=stoch_group)
 
 // ===============================
 // CCI SETTINGS
@@ -354,6 +386,10 @@ useCCI = input.bool(false, "Use CCI", group=cci_group)
 cci_length = input.int(20, "CCI Length", minval=5, maxval=200, group=cci_group)
 cci_overbought = input.float(100, "CCI Overbought", minval=50, maxval=200, group=cci_group)
 cci_oversold = input.float(-100, "CCI Oversold", minval=-200, maxval=-50, group=cci_group)
+cci_signal_type = input.string("Level Filter", "CCI Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling", "Zero Cross"], group=cci_group)
+cci_signal_memory = input.bool(false, "CCI Signal Memory", group=cci_group)
+cci_memory_bars = input.int(5, "CCI Memory Bars", minval=1, maxval=20, group=cci_group)
+cci_direction_period = input.int(3, "CCI Direction Period", minval=1, maxval=10, group=cci_group)
 
 // ===============================
 // MOMENTUM SETTINGS
@@ -363,6 +399,10 @@ useMomentum = input.bool(false, "Use Momentum", group=mom_group)
 momentum_length = input.int(10, "Momentum Length", minval=2, maxval=100, group=mom_group)
 momentum_overbought = input.float(0.5, "Momentum Overbought", minval=0.1, maxval=2.0, step=0.1, group=mom_group)
 momentum_oversold = input.float(-0.5, "Momentum Oversold", minval=-2.0, maxval=-0.1, step=0.1, group=mom_group)
+momentum_signal_type = input.string("Level Filter", "Momentum Signal Type", options=["Level Filter", "Cross Level", "Rising/Falling", "Zero Cross"], group=mom_group)
+momentum_signal_memory = input.bool(false, "Momentum Signal Memory", group=mom_group)
+momentum_memory_bars = input.int(5, "Momentum Memory Bars", minval=1, maxval=20, group=mom_group)
+momentum_direction_period = input.int(3, "Momentum Direction Period", minval=1, maxval=10, group=mom_group)
 
 // ===============================
 // DYNAMIC RSI
@@ -400,7 +440,11 @@ dmi_group = "═══════════ DMI ═════════�
 useDMI = input.bool(false, "Use DMI", group=dmi_group)
 dmi_length = input.int(14, "DMI Length", minval=5, maxval=50, group=dmi_group)
 dmi_adx_threshold = input.float(25, "ADX Threshold", minval=10, maxval=50, group=dmi_group)
-dmi_signal_type = input.string("DI Cross", "DMI Signal", options=["DI Cross", "ADX Level", "Both"], group=dmi_group)
+dmi_signal_type = input.string("DI Cross", "DMI Signal", options=["DI Cross", "ADX Level", "Both", "ADX Rising"], group=dmi_group)
+dmi_signal_memory = input.bool(false, "DMI Signal Memory", group=dmi_group)
+dmi_memory_bars = input.int(5, "DMI Memory Bars", minval=1, maxval=20, group=dmi_group)
+dmi_adx_rising = input.bool(false, "ADX Rising Signal", group=dmi_group)
+dmi_adx_period = input.int(3, "ADX Rising Period", minval=1, maxval=10, group=dmi_group)
 
 // ===============================
 // CHAIKIN MONEY FLOW
@@ -523,7 +567,7 @@ sar_increment = input.float(0.02, "SAR Increment", minval=0.01, maxval=0.1, step
 sar_maximum = input.float(0.2, "SAR Maximum", minval=0.1, maxval=1.0, step=0.1, group=close_group)
 
 // ===============================
-// CALCULATION FUNCTIONS - FIXED: consolidated all function definitions here
+// CALCULATION FUNCTIONS - FIXED
 // ===============================
 // Bollinger Bands
 bollinger_bands(src, length, mult) =>
@@ -537,8 +581,8 @@ keltner_channel(src, length, mult) =>
     range_val = ta.atr(length)
     [basis + range_val * mult, basis, basis - range_val * mult]
 
-// Enhanced SuperTrend Function with BTC source support
-calculate_supertrend(factor, period, use_btc) =>
+// FIXED SuperTrend Function - returns state, no global var modification
+calculate_supertrend(factor, period, use_btc, prev_direction, prev_supertrend) =>
     src_high = use_btc ? btc_high : high
     src_low = use_btc ? btc_low : low
     src_close = use_btc ? btc_close : close
@@ -557,14 +601,11 @@ calculate_supertrend(factor, period, use_btc) =>
     direction = 1
     superTrend = 0.0
     
-    prevSuperTrend = superTrend[1]
-    prevDirection = direction[1]
-    
-    if na(prevSuperTrend)
+    if na(prev_supertrend)
         direction := 1
         superTrend := lb
     else
-        if prevSuperTrend == prevUpperBand
+        if prev_supertrend == prevUpperBand
             direction := src_close <= ub ? -1 : 1
         else
             direction := src_close >= lb ? 1 : -1
@@ -572,6 +613,16 @@ calculate_supertrend(factor, period, use_btc) =>
         superTrend := direction == -1 ? ub : lb
     
     [superTrend, direction]
+
+// Individual SuperTrend state variables for each instance
+var float st_direction = 1
+var float st_supertrend = na
+var float st1_direction = 1
+var float st1_supertrend = na
+var float st2_direction = 1
+var float st2_supertrend = na
+var float st3_direction = 1
+var float st3_supertrend = na
 
 // RVI Calculation
 calculate_rvi(length) =>
@@ -636,19 +687,6 @@ calculate_qqe(src, length, smoothing, factor, prev_longband, prev_shortband, pre
     
     [rsi_ma, longband_result, shortband_result, trend_result]
 
-// QQE calculation with proper var assignment in global scope
-[qqe_rsi, new_qqe_long, new_qqe_short, new_qqe_trend] = calculate_qqe(close, qqe_rsi_length, qqe_smoothing, qqe_factor, qqe_longband, qqe_shortband, qqe_trend_state)
-
-// Update global var variables outside the function
-qqe_longband := new_qqe_long
-qqe_shortband := new_qqe_short
-qqe_trend_state := new_qqe_trend
-
-// Return final values for use in signals
-qqe_long = new_qqe_long
-qqe_short = new_qqe_short
-qqe_trend = new_qqe_trend
-
 // Dynamic Bands
 dynamic_bands(value, length, mult) =>
     basis = ta.sma(value, length)
@@ -665,18 +703,63 @@ calculate_cmf(length) =>
     mfv = ((close - low) - (high - close)) / (high - low) * volume
     ta.sma(mfv, length) / ta.sma(volume, length)
 
-// Divergence Detection Function
-detect_divergence(price_series, indicator_series, lookback) =>
-    // Simple divergence implementation
+// ENHANCED Divergence Detection Function - PROFESSIONAL IMPLEMENTATION
+detect_divergence_professional(price_series, indicator_series, lookback, min_pivot_distance) =>
+    // Find significant pivots with minimum distance requirement
     ph = ta.pivothigh(price_series, lookback, lookback)
     pl = ta.pivotlow(price_series, lookback, lookback)
     ih = ta.pivothigh(indicator_series, lookback, lookback)
     il = ta.pivotlow(indicator_series, lookback, lookback)
     
-    bull_div = not na(pl) and not na(il) and pl < pl[1] and il > il[1]
-    bear_div = not na(ph) and not na(ih) and ph > ph[1] and ih < ih[1]
+    // Store recent significant highs and lows with bars
+    var float last_price_high = na
+    var float last_price_low = na
+    var float last_indicator_high = na
+    var float last_indicator_low = na
+    var int last_high_bar = na
+    var int last_low_bar = na
+    
+    // Update last significant pivot high
+    if not na(ph) and not na(ih)
+        if na(last_high_bar) or (bar_index - last_high_bar) >= min_pivot_distance
+            if ph != last_price_high or ih != last_indicator_high
+                last_price_high := ph
+                last_indicator_high := ih
+                last_high_bar := bar_index
+    
+    // Update last significant pivot low  
+    if not na(pl) and not na(il)
+        if na(last_low_bar) or (bar_index - last_low_bar) >= min_pivot_distance
+            if pl != last_price_low or il != last_indicator_low
+                last_price_low := pl
+                last_indicator_low := il
+                last_low_bar := bar_index
+    
+    // Detect divergences only with sufficient history
+    bull_div = false
+    bear_div = false
+    
+    // Bullish divergence: price makes lower low, indicator makes higher low
+    if not na(pl) and not na(il) and not na(last_price_low) and not na(last_indicator_low)
+        if (bar_index - last_low_bar) >= min_pivot_distance
+            price_lower_low = pl < last_price_low
+            indicator_higher_low = il > last_indicator_low
+            bull_div := price_lower_low and indicator_higher_low
+    
+    // Bearish divergence: price makes higher high, indicator makes lower high
+    if not na(ph) and not na(ih) and not na(last_price_high) and not na(last_indicator_high)
+        if (bar_index - last_high_bar) >= min_pivot_distance
+            price_higher_high = ph > last_price_high
+            indicator_lower_high = ih < last_indicator_high
+            bear_div := price_higher_high and indicator_lower_high
     
     [bull_div, bear_div]
+
+// Enhanced Divergence Settings
+div_pivot_lookback = input.int(5, "Divergence Pivot Lookback", minval=2, maxval=15, group=div_group)
+div_min_pivot_distance = input.int(10, "Min Pivot Distance", minval=5, maxval=50, group=div_group)
+div_signal_memory = input.bool(true, "Divergence Signal Memory", group=div_group)
+div_memory_bars = input.int(10, "Divergence Memory Bars", minval=5, maxval=30, group=div_group)
 
 // Candle Pattern Functions
 f_isHammer() =>
@@ -708,11 +791,8 @@ f_isThreeWhiteSoldiers() =>
 f_isThreeBlackCrows() =>
     close < open and close[1] < open[1] and close[2] < open[2] and close < close[1] and close[1] < close[2] and open > close[1] and open[1] > close[2]
 
-// Legacy Supertrend Function - FIXED: removed duplicate definition
-// Function moved to functions section above, removing this duplicate
-
 // ===============================
-// INDICATOR CALCULATIONS
+// INDICATOR CALCULATIONS - FIXED ORDER
 // ===============================
 // ATR calculations
 atr_val = ta.atr(14)
@@ -725,6 +805,14 @@ volatility = ta.stdev(close, vol_length) / ta.sma(close, vol_length) * 100
 
 // Parabolic SAR
 sar_val = ta.sar(sar_start, sar_increment, sar_maximum)
+
+// MA calculations - FIXED: moved before cross calculations
+ma_fast_val = ma_function(close, ma_fast_length, ma_fast_type)
+ma_slow_val = ma_function(close, ma_slow_length, ma_slow_type)
+
+// MA Cross calculations - FIXED: moved after MA value calculations
+ma_cross_under = ta.crossunder(ma_fast_val, ma_slow_val)
+ma_cross_over = ta.crossover(ma_fast_val, ma_slow_val)
 
 // RSI calculations with BTC source support
 rsi1_source = rsi1_use_btc_source ? btc_close : close
@@ -744,14 +832,18 @@ rsi2_cross_down = ta.crossunder(rsi2_value, rsi2_overbought)
 rsi3_cross_up = ta.crossover(rsi3_value, rsi3_oversold)
 rsi3_cross_down = ta.crossunder(rsi3_value, rsi3_overbought)
 
-// SuperTrend calculations
-[st1_line, st1_direction] = calculate_supertrend(st1_factor, st1_period, st1_use_btc_source)
-[st2_line, st2_direction] = calculate_supertrend(st2_factor, st2_period, st2_use_btc_source)
-[st3_line, st3_direction] = calculate_supertrend(st3_factor, st3_period, st3_use_btc_source)
+// SuperTrend calculations - FIXED: using corrected function with state management
+[st1_line, st1_dir] = calculate_supertrend(st1_factor, st1_period, st1_use_btc_source, st1_direction, st1_supertrend)
+st1_direction := st1_dir
+st1_supertrend := st1_line
 
-// MA Cross calculations - FIXED: extract ta.cross functions to global scope for consistency
-ma_cross_under = ta.crossunder(ma_fast_val, ma_slow_val)
-ma_cross_over = ta.crossover(ma_fast_val, ma_slow_val)
+[st2_line, st2_dir] = calculate_supertrend(st2_factor, st2_period, st2_use_btc_source, st2_direction, st2_supertrend)
+st2_direction := st2_dir
+st2_supertrend := st2_line
+
+[st3_line, st3_dir] = calculate_supertrend(st3_factor, st3_period, st3_use_btc_source, st3_direction, st3_supertrend)
+st3_direction := st3_dir
+st3_supertrend := st3_line
 
 // Channels
 [bb_upper, bb_basis, bb_lower] = bollinger_bands(close, channel_length, channel_multiplier)
@@ -761,36 +853,24 @@ channel_upper = channel_type == "Bollinger Bands" ? bb_upper : kc_upper
 channel_basis = channel_type == "Bollinger Bands" ? bb_basis : kc_basis
 channel_lower = channel_type == "Bollinger Bands" ? bb_lower : kc_lower
 
-// Legacy Supertrend (keeping for compatibility) - FIXED: moved before usage
-legacy_supertrend(factor, period) =>
-    src = hl2
-    atr = ta.atr(period)
-    upperBand = src + factor * atr
-    lowerBand = src - factor * atr
-    
-    prevLowerBand = nz(lowerBand[1])
-    prevUpperBand = nz(upperBand[1])
-    
-    lb = lowerBand > prevLowerBand or close[1] < prevLowerBand ? lowerBand : prevLowerBand
-    ub = upperBand < prevUpperBand or close[1] > prevUpperBand ? upperBand : prevUpperBand
-    
-    int direction = na
-    float superTrend = na
-    
-    prevSuperTrend = superTrend[1]
-    if na(prevSuperTrend)
-        direction := 1
-    else
-        if prevSuperTrend == prevUpperBand
-            direction := close <= ub ? -1 : 1
-        else
-            direction := close >= lb ? 1 : -1
-    
-    superTrend := direction == -1 ? ub : lb
-    [direction, superTrend, ub, lb]
+// Legacy Supertrend calculation - FIXED with all parameters
+[st_line, st_direction_new] = calculate_supertrend(supertrend_factor, supertrend_period, false, st_direction, st_supertrend)
+st_direction := st_direction_new
+st_supertrend := st_line
+st_trend = st_direction_new  // For compatibility with existing code
 
-// Legacy Supertrend calculation
-[st_trend, st_val, st_up, st_down] = legacy_supertrend(supertrend_factor, supertrend_period)
+// QQE calculation with proper var assignment in global scope
+[qqe_rsi, new_qqe_long, new_qqe_short, new_qqe_trend] = calculate_qqe(close, qqe_rsi_length, qqe_smoothing, qqe_factor, qqe_longband, qqe_shortband, qqe_trend_state)
+
+// Update global var variables outside the function
+qqe_longband := new_qqe_long
+qqe_shortband := new_qqe_short
+qqe_trend_state := new_qqe_trend
+
+// Return final values for use in signals
+qqe_long = new_qqe_long
+qqe_short = new_qqe_short
+qqe_trend = new_qqe_trend
 
 // RVI
 [rvi_val, rvi_signal] = calculate_rvi(rvi_length)
@@ -861,15 +941,52 @@ external_cross_up = ta.crossover(external_source, external_level)
 external_cross_down = ta.crossunder(external_source, external_level)
 
 // ===============================
-// SIGNAL MEMORY VARIABLES
+// SIGNAL MEMORY VARIABLES - EXPANDED FOR ALL INDICATORS
 // ===============================
 var int ma_cross_bar = 0
 var int macd_cross_bar = 0
 
+// RSI Signal Memory (3 instances)
+var int rsi1_signal_bar = 0
+var int rsi2_signal_bar = 0
+var int rsi3_signal_bar = 0
+
+// SuperTrend Signal Memory (3 instances + legacy)
+var int st1_signal_bar = 0
+var int st2_signal_bar = 0
+var int st3_signal_bar = 0
+var int supertrend_signal_bar = 0
+
+// Oscillators Signal Memory
+var int stoch_signal_bar = 0
+var int dmi_signal_bar = 0
+var int cci_signal_bar = 0
+var int rvi_signal_bar = 0
+var int mfi_signal_bar = 0
+var int momentum_signal_bar = 0
+var int smi_signal_bar = 0
+var int bop_signal_bar = 0
+var int cmf_signal_bar = 0
+var int qqe_signal_bar = 0
+
+// Pattern and Advanced Signal Memory
+var int divergence_signal_bar = 0
+var int candle_signal_bar = 0
+var int lrc_signal_bar = 0
+var int external_signal_bar = 0
+var int channels_signal_bar = 0
+
+// Filter Signal Memory
+var int volume_signal_bar = 0
+var int volatility_signal_bar = 0
+var int highlow_signal_bar = 0
+var int atr_change_signal_bar = 0
+var int pinbar_signal_bar = 0
+
 // ===============================
-// SIGNAL CONDITIONS - USING PRE-CALCULATED VALUES - FIXED SYNTAX
+// SIGNAL CONDITIONS - FIXED SYNTAX
 // ===============================
-// Date and day filters (Fixed: use intermediate variables for complex logical expressions)
+// Date and day filters
 date_filter = year >= startYear and year <= stopYear
 
 // Calculate blocked days step by step
@@ -884,93 +1001,234 @@ is_sunday_blocked = blockSu and dayofweek == dayofweek.sunday
 day_blocked = is_monday_blocked or is_tuesday_blocked or is_wednesday_blocked or is_thursday_blocked or is_friday_blocked or is_saturday_blocked or is_sunday_blocked
 day_filter = not day_blocked
 
-// Initialize signal variables
-// RSI Signals - FIXED: replaced switch with if/else for better stability
+// Initialize signal variables - EXPANDED RSI LOGIC WITH SIGNAL MEMORY
+// RSI1 Signals - ENHANCED with multiple signal types and memory
 rsi1_long_signal = true
 if useRSI1
+    // Calculate current signals based on type
+    current_rsi1_long_signal = false
+    rsi1_rising = rsi1_value > rsi1_value[rsi1_direction_period]
+    rsi1_falling = rsi1_value < rsi1_value[rsi1_direction_period]
+    
     if rsi1_condition == "Oversold"
-        rsi1_long_signal := rsi1_value <= rsi1_oversold
+        current_rsi1_long_signal := rsi1_value <= rsi1_oversold
     else if rsi1_condition == "Above 50"
-        rsi1_long_signal := rsi1_value > 50
+        current_rsi1_long_signal := rsi1_value > 50
     else if rsi1_condition == "Custom Range"
-        rsi1_long_signal := rsi1_value >= rsi1_custom_min and rsi1_value <= rsi1_custom_max
+        current_rsi1_long_signal := rsi1_value >= rsi1_custom_min and rsi1_value <= rsi1_custom_max
     else if rsi1_condition == "Cross Level Up"
-        rsi1_long_signal := rsi1_cross_up
+        current_rsi1_long_signal := rsi1_cross_up
+    else if rsi1_condition == "Cross Level Down"
+        current_rsi1_long_signal := rsi1_cross_down
+    else if rsi1_condition == "Rising/Falling"
+        current_rsi1_long_signal := rsi1_rising
     else
-        rsi1_long_signal := false
+        current_rsi1_long_signal := false
+    
+    // Signal Memory Logic
+    if current_rsi1_long_signal
+        rsi1_signal_bar := bar_index
+    
+    memory_active = rsi1_signal_memory and bar_index - rsi1_signal_bar <= rsi1_memory_bars
+    rsi1_long_signal := current_rsi1_long_signal or memory_active
 
+// RSI1 Short Signals
 rsi1_short_signal = true
 if useRSI1
+    current_rsi1_short_signal = false
+    
     if rsi1_condition == "Oversold"
-        rsi1_short_signal := rsi1_value >= rsi1_overbought
+        current_rsi1_short_signal := rsi1_value >= rsi1_overbought
     else if rsi1_condition == "Above 50"
-        rsi1_short_signal := rsi1_value < 50
+        current_rsi1_short_signal := rsi1_value < 50
     else if rsi1_condition == "Custom Range"
-        rsi1_short_signal := rsi1_value <= rsi1_custom_min or rsi1_value >= rsi1_custom_max
+        current_rsi1_short_signal := rsi1_value <= rsi1_custom_min or rsi1_value >= rsi1_custom_max
     else if rsi1_condition == "Cross Level Up"
-        rsi1_short_signal := rsi1_cross_down
+        current_rsi1_short_signal := rsi1_cross_down
+    else if rsi1_condition == "Cross Level Down"
+        current_rsi1_short_signal := rsi1_cross_up
+    else if rsi1_condition == "Rising/Falling"
+        current_rsi1_short_signal := rsi1_value < rsi1_value[rsi1_direction_period]
     else
-        rsi1_short_signal := false
+        current_rsi1_short_signal := false
+    
+    memory_active_short = rsi1_signal_memory and bar_index - rsi1_signal_bar <= rsi1_memory_bars
+    rsi1_short_signal := current_rsi1_short_signal or memory_active_short
 
+// RSI2 Signals - ENHANCED with multiple signal types and memory
 rsi2_long_signal = true
 if useRSI2
+    current_rsi2_long_signal = false
+    rsi2_rising = rsi2_value > rsi2_value[rsi2_direction_period]
+    
     if rsi2_condition == "Oversold"
-        rsi2_long_signal := rsi2_value <= rsi2_oversold
+        current_rsi2_long_signal := rsi2_value <= rsi2_oversold
     else if rsi2_condition == "Above 50"
-        rsi2_long_signal := rsi2_value > 50
+        current_rsi2_long_signal := rsi2_value > 50
     else if rsi2_condition == "Custom Range"
-        rsi2_long_signal := rsi2_value >= rsi2_custom_min and rsi2_value <= rsi2_custom_max
+        current_rsi2_long_signal := rsi2_value >= rsi2_custom_min and rsi2_value <= rsi2_custom_max
     else if rsi2_condition == "Cross Level Up"
-        rsi2_long_signal := rsi2_cross_up
+        current_rsi2_long_signal := rsi2_cross_up
+    else if rsi2_condition == "Cross Level Down"
+        current_rsi2_long_signal := rsi2_cross_down
+    else if rsi2_condition == "Rising/Falling"
+        current_rsi2_long_signal := rsi2_rising
     else
-        rsi2_long_signal := false
+        current_rsi2_long_signal := false
+    
+    if current_rsi2_long_signal
+        rsi2_signal_bar := bar_index
+    
+    memory_active_2 = rsi2_signal_memory and bar_index - rsi2_signal_bar <= rsi2_memory_bars
+    rsi2_long_signal := current_rsi2_long_signal or memory_active_2
 
 rsi2_short_signal = true
 if useRSI2
+    current_rsi2_short_signal = false
+    
     if rsi2_condition == "Oversold"
-        rsi2_short_signal := rsi2_value >= rsi2_overbought
+        current_rsi2_short_signal := rsi2_value >= rsi2_overbought
     else if rsi2_condition == "Above 50"
-        rsi2_short_signal := rsi2_value < 50
+        current_rsi2_short_signal := rsi2_value < 50
     else if rsi2_condition == "Custom Range"
-        rsi2_short_signal := rsi2_value <= rsi2_custom_min or rsi2_value >= rsi2_custom_max
+        current_rsi2_short_signal := rsi2_value <= rsi2_custom_min or rsi2_value >= rsi2_custom_max
     else if rsi2_condition == "Cross Level Up"
-        rsi2_short_signal := rsi2_cross_down
+        current_rsi2_short_signal := rsi2_cross_down
+    else if rsi2_condition == "Cross Level Down"
+        current_rsi2_short_signal := rsi2_cross_up
+    else if rsi2_condition == "Rising/Falling"
+        current_rsi2_short_signal := rsi2_value < rsi2_value[rsi2_direction_period]
     else
-        rsi2_short_signal := false
+        current_rsi2_short_signal := false
+    
+    memory_active_2_short = rsi2_signal_memory and bar_index - rsi2_signal_bar <= rsi2_memory_bars
+    rsi2_short_signal := current_rsi2_short_signal or memory_active_2_short
 
+// RSI3 Signals - ENHANCED with multiple signal types and memory
 rsi3_long_signal = true
 if useRSI3
+    current_rsi3_long_signal = false
+    rsi3_rising = rsi3_value > rsi3_value[rsi3_direction_period]
+    
     if rsi3_condition == "Oversold"
-        rsi3_long_signal := rsi3_value <= rsi3_oversold
+        current_rsi3_long_signal := rsi3_value <= rsi3_oversold
     else if rsi3_condition == "Above 50"
-        rsi3_long_signal := rsi3_value > 50
+        current_rsi3_long_signal := rsi3_value > 50
     else if rsi3_condition == "Custom Range"
-        rsi3_long_signal := rsi3_value >= rsi3_custom_min and rsi3_value <= rsi3_custom_max
+        current_rsi3_long_signal := rsi3_value >= rsi3_custom_min and rsi3_value <= rsi3_custom_max
     else if rsi3_condition == "Cross Level Up"
-        rsi3_long_signal := rsi3_cross_up
+        current_rsi3_long_signal := rsi3_cross_up
+    else if rsi3_condition == "Cross Level Down"
+        current_rsi3_long_signal := rsi3_cross_down
+    else if rsi3_condition == "Rising/Falling"
+        current_rsi3_long_signal := rsi3_rising
     else
-        rsi3_long_signal := false
+        current_rsi3_long_signal := false
+    
+    if current_rsi3_long_signal
+        rsi3_signal_bar := bar_index
+    
+    memory_active_3 = rsi3_signal_memory and bar_index - rsi3_signal_bar <= rsi3_memory_bars
+    rsi3_long_signal := current_rsi3_long_signal or memory_active_3
 
 rsi3_short_signal = true
 if useRSI3
+    current_rsi3_short_signal = false
+    
     if rsi3_condition == "Oversold"
-        rsi3_short_signal := rsi3_value >= rsi3_overbought
+        current_rsi3_short_signal := rsi3_value >= rsi3_overbought
     else if rsi3_condition == "Above 50"
-        rsi3_short_signal := rsi3_value < 50
+        current_rsi3_short_signal := rsi3_value < 50
     else if rsi3_condition == "Custom Range"
-        rsi3_short_signal := rsi3_value <= rsi3_custom_min or rsi3_value >= rsi3_custom_max
+        current_rsi3_short_signal := rsi3_value <= rsi3_custom_min or rsi3_value >= rsi3_custom_max
     else if rsi3_condition == "Cross Level Up"
-        rsi3_short_signal := rsi3_cross_down
+        current_rsi3_short_signal := rsi3_cross_down
+    else if rsi3_condition == "Cross Level Down"
+        current_rsi3_short_signal := rsi3_cross_up
+    else if rsi3_condition == "Rising/Falling"
+        current_rsi3_short_signal := rsi3_value < rsi3_value[rsi3_direction_period]
     else
-        rsi3_short_signal := false
+        current_rsi3_short_signal := false
+    
+    memory_active_3_short = rsi3_signal_memory and bar_index - rsi3_signal_bar <= rsi3_memory_bars
+    rsi3_short_signal := current_rsi3_short_signal or memory_active_3_short
 
-// SuperTrend Signals - FIXED: simplified logic
-st1_long_signal = useST1 ? st1_direction == 1 : true
-st1_short_signal = useST1 ? st1_direction == -1 : true
-st2_long_signal = useST2 ? st2_direction == 1 : true
-st2_short_signal = useST2 ? st2_direction == -1 : true
-st3_long_signal = useST3 ? st3_direction == 1 : true
-st3_short_signal = useST3 ? st3_direction == -1 : true
+// ENHANCED SuperTrend Signals with signal type selection and memory
+// ST1 - ENHANCED with Signal Memory
+st1_trend_up_calc = st1_direction == 1
+st1_trend_down_calc = st1_direction == -1
+st1_trend_change_up_calc = st1_trend_up_calc and st1_direction[1] == -1
+st1_trend_change_down_calc = st1_trend_down_calc and st1_direction[1] == 1
+
+current_st1_long_signal = false
+if st1_signal_type == "Trend Change"
+    current_st1_long_signal := st1_trend_change_up_calc
+else if st1_signal_type == "Trend Filter"
+    current_st1_long_signal := st1_trend_up_calc
+
+current_st1_short_signal = false
+if st1_signal_type == "Trend Change"
+    current_st1_short_signal := st1_trend_change_down_calc
+else if st1_signal_type == "Trend Filter"
+    current_st1_short_signal := st1_trend_down_calc
+
+// Signal Memory for ST1 - FIXED logic
+if current_st1_long_signal or current_st1_short_signal
+    st1_signal_bar := bar_index
+
+st1_memory_active = st1_signal_memory and bar_index - st1_signal_bar <= st1_memory_bars
+st1_long_signal = useST1 ? (current_st1_long_signal or (st1_memory_active and st1_trend_up_calc)) : true
+st1_short_signal = useST1 ? (current_st1_short_signal or (st1_memory_active and st1_trend_down_calc)) : true
+
+// ST2 - ENHANCED with Signal Memory  
+st2_trend_up_calc = st2_direction == 1
+st2_trend_down_calc = st2_direction == -1
+st2_trend_change_up_calc = st2_trend_up_calc and st2_direction[1] == -1
+st2_trend_change_down_calc = st2_trend_down_calc and st2_direction[1] == 1
+
+current_st2_long_signal = false
+if st2_signal_type == "Trend Change"
+    current_st2_long_signal := st2_trend_change_up_calc
+else if st2_signal_type == "Trend Filter"
+    current_st2_long_signal := st2_trend_up_calc
+
+current_st2_short_signal = false
+if st2_signal_type == "Trend Change"
+    current_st2_short_signal := st2_trend_change_down_calc
+else if st2_signal_type == "Trend Filter"
+    current_st2_short_signal := st2_trend_down_calc
+
+if current_st2_long_signal or current_st2_short_signal
+    st2_signal_bar := bar_index
+
+st2_memory_active = st2_signal_memory and bar_index - st2_signal_bar <= st2_memory_bars
+st2_long_signal = useST2 ? (current_st2_long_signal or (st2_memory_active and st2_trend_up_calc)) : true
+st2_short_signal = useST2 ? (current_st2_short_signal or (st2_memory_active and st2_trend_down_calc)) : true
+
+// ST3 - ENHANCED with Signal Memory
+st3_trend_up_calc = st3_direction == 1
+st3_trend_down_calc = st3_direction == -1
+st3_trend_change_up_calc = st3_trend_up_calc and st3_direction[1] == -1
+st3_trend_change_down_calc = st3_trend_down_calc and st3_direction[1] == 1
+
+current_st3_long_signal = false
+if st3_signal_type == "Trend Change"
+    current_st3_long_signal := st3_trend_change_up_calc
+else if st3_signal_type == "Trend Filter"
+    current_st3_long_signal := st3_trend_up_calc
+
+current_st3_short_signal = false
+if st3_signal_type == "Trend Change"
+    current_st3_short_signal := st3_trend_change_down_calc
+else if st3_signal_type == "Trend Filter"
+    current_st3_short_signal := st3_trend_down_calc
+
+if current_st3_long_signal or current_st3_short_signal
+    st3_signal_bar := bar_index
+
+st3_memory_active = st3_signal_memory and bar_index - st3_signal_bar <= st3_memory_bars
+st3_long_signal = useST3 ? (current_st3_long_signal or (st3_memory_active and st3_trend_up_calc)) : true
+st3_short_signal = useST3 ? (current_st3_short_signal or (st3_memory_active and st3_trend_down_calc)) : true
 
 // Volume filter - FIXED: replaced switch with if/else
 volume_condition_result = true
@@ -1023,16 +1281,26 @@ if useATRChangeFilter
     atr_change = (current_atr - past_atr) / past_atr * 100
     atr_change_signal := atr_change >= atr_change_threshold
 
-// Block If Worse Filter
+// Block If Worse Filter - IMPROVED: проверка за период, а не только текущая свеча
 block_worse_long_signal = true
 if useBlockIfWorse
-    price_move = (close - close[1]) / close[1] * 100
-    block_worse_long_signal := not (price_move > blockIfWorsePercent)
+    // Проверяем движение цены за последние 3 бара
+    price_move_1 = (close - close[1]) / close[1] * 100
+    price_move_2 = (close[1] - close[2]) / close[2] * 100
+    price_move_3 = (close[2] - close[3]) / close[3] * 100
+    max_positive_move = math.max(price_move_1, math.max(price_move_2, price_move_3))
+    // Блокируем, если цена уже ушла в нашу сторону больше чем на X%
+    block_worse_long_signal := not (max_positive_move > blockIfWorsePercent)
 
 block_worse_short_signal = true
 if useBlockIfWorse
-    price_move = (close - close[1]) / close[1] * 100
-    block_worse_short_signal := not (price_move < -blockIfWorsePercent)
+    // Проверяем движение цены за последние 3 бара
+    price_move_1 = (close - close[1]) / close[1] * 100
+    price_move_2 = (close[1] - close[2]) / close[2] * 100
+    price_move_3 = (close[2] - close[3]) / close[3] * 100
+    max_negative_move = math.min(price_move_1, math.min(price_move_2, price_move_3))
+    // Блокируем, если цена уже ушла в нашу сторону больше чем на X%
+    block_worse_short_signal := not (max_negative_move < -blockIfWorsePercent)
 
 // PinBar + MA
 pinbar_ma_long_signal = true
@@ -1040,7 +1308,7 @@ if usePinBarMA
     ma1 = ta.ema(close, pinbar_ma1_length)
     ma2 = ta.ema(close, pinbar_ma2_length)
     ma3 = ta.ema(close, pinbar_ma3_length)
-    is_pin = is_hammer()
+    is_pin = f_isHammer()
     ma_aligned = ma1 > ma2 and ma2 > ma3
     pinbar_ma_long_signal := is_pin and ma_aligned
 
@@ -1049,21 +1317,39 @@ if usePinBarMA
     ma1 = ta.ema(close, pinbar_ma1_length)
     ma2 = ta.ema(close, pinbar_ma2_length)
     ma3 = ta.ema(close, pinbar_ma3_length)
-    is_pin = is_hammer()
+    is_pin = f_isHammer()
     ma_aligned = ma1 < ma2 and ma2 < ma3
     pinbar_ma_short_signal := is_pin and ma_aligned
 
-// Supertrend Filter (legacy)
-supertrend_long_signal = useSupertrend ? st_trend == 1 : true
-supertrend_short_signal = useSupertrend ? st_trend == -1 : true
+// Supertrend Filter (legacy) - FIXED: with signal type selection
+supertrend_trend_up_calc = st_direction == 1
+supertrend_trend_down_calc = st_direction == -1
+supertrend_trend_change_up_calc = supertrend_trend_up_calc and st_direction[1] == -1
+supertrend_trend_change_down_calc = supertrend_trend_down_calc and st_direction[1] == 1
 
-// Consolidation Zone
+supertrend_long_signal_calc = false
+if st_signal_type == "Trend Change"
+    supertrend_long_signal_calc := supertrend_trend_change_up_calc
+else if st_signal_type == "Trend Filter"
+    supertrend_long_signal_calc := supertrend_trend_up_calc
+
+supertrend_short_signal_calc = false
+if st_signal_type == "Trend Change"
+    supertrend_short_signal_calc := supertrend_trend_change_down_calc
+else if st_signal_type == "Trend Filter"
+    supertrend_short_signal_calc := supertrend_trend_down_calc
+
+supertrend_long_signal = useSupertrend ? supertrend_long_signal_calc : true
+supertrend_short_signal = useSupertrend ? supertrend_short_signal_calc : true
+
+// Consolidation Zone - FIXED: правильная логика консолидации
 consolidation_signal = true
 if useConsolidation
     highest_cons = ta.highest(high, consolidation_length)
     lowest_cons = ta.lowest(low, consolidation_length)
     range_percent = (highest_cons - lowest_cons) / lowest_cons * 100
-    consolidation_signal := range_percent > consolidation_range
+    // ИСПРАВЛЕНО: для консолидации диапазон должен быть МЕНЬШЕ порога
+    consolidation_signal := range_percent <= consolidation_range
 
 // Moving Average Signals with Signal Memory - FIXED: simplified logic
 ma_long_signal = true
@@ -1138,8 +1424,42 @@ rvi_short_signal = useRVI ? rvi_val > rvi_overbought : true
 mfi_long_signal = useMFI ? mfi_val < mfi_oversold : true
 mfi_short_signal = useMFI ? mfi_val > mfi_overbought : true
 
-stoch_long_signal = useStochastic ? stoch_k_smoothed < stoch_oversold : true
-stoch_short_signal = useStochastic ? stoch_k_smoothed > stoch_overbought : true
+// Stochastic Signals - ENHANCED with multiple signal types and memory
+stoch_long_signal = true
+stoch_short_signal = true
+if useStochastic
+    // Calculate different signal types
+    current_stoch_long_signal = false
+    current_stoch_short_signal = false
+    
+    stoch_rising = stoch_k_smoothed > stoch_k_smoothed[stoch_direction_period]
+    stoch_falling = stoch_k_smoothed < stoch_k_smoothed[stoch_direction_period]
+    stoch_k_d_cross_up = ta.crossover(stoch_k_smoothed, stoch_d)
+    stoch_k_d_cross_down = ta.crossunder(stoch_k_smoothed, stoch_d)
+    
+    if stoch_signal_type == "Oversold Cross"
+        current_stoch_long_signal := stoch_cross_up
+        current_stoch_short_signal := stoch_cross_down
+    else if stoch_signal_type == "Overbought Cross"
+        current_stoch_long_signal := ta.crossunder(stoch_k_smoothed, stoch_overbought)
+        current_stoch_short_signal := ta.crossover(stoch_k_smoothed, stoch_oversold)
+    else if stoch_signal_type == "K-D Cross"
+        current_stoch_long_signal := stoch_k_d_cross_up
+        current_stoch_short_signal := stoch_k_d_cross_down
+    else if stoch_signal_type == "Level Filter"
+        current_stoch_long_signal := stoch_k_smoothed < stoch_oversold
+        current_stoch_short_signal := stoch_k_smoothed > stoch_overbought
+    else if stoch_signal_type == "Rising/Falling"
+        current_stoch_long_signal := stoch_rising
+        current_stoch_short_signal := stoch_falling
+    
+    // Signal Memory Logic
+    if current_stoch_long_signal or current_stoch_short_signal
+        stoch_signal_bar := bar_index
+    
+    stoch_memory_active = stoch_signal_memory and bar_index - stoch_signal_bar <= stoch_memory_bars
+    stoch_long_signal := current_stoch_long_signal or (stoch_memory_active and current_stoch_long_signal)
+    stoch_short_signal := current_stoch_short_signal or (stoch_memory_active and current_stoch_short_signal)
 
 cci_long_signal = useCCI ? cci_val < cci_oversold : true
 cci_short_signal = useCCI ? cci_val > cci_overbought : true
@@ -1156,32 +1476,41 @@ dmfi_short_signal = useDynamicMFI ? mfi_val > dmfi_upper : true
 smi_long_signal = useSMIO ? smi_val < smio_oversold : true
 smi_short_signal = useSMIO ? smi_val > smio_overbought : true
 
-// DMI Condition - FIXED: replaced switch with if/else
+// DMI Condition - ENHANCED with Signal Memory and ADX Rising
 dmi_long_signal = true
-if useDMI
-    adx_strong = adx > dmi_adx_threshold
-    
-    if dmi_signal_type == "DI Cross"
-        dmi_long_signal := di_cross_long
-    else if dmi_signal_type == "ADX Level"
-        dmi_long_signal := adx_strong
-    else if dmi_signal_type == "Both"
-        dmi_long_signal := di_cross_long and adx_strong
-    else
-        dmi_long_signal := false
-
 dmi_short_signal = true
 if useDMI
+    current_dmi_long_signal = false
+    current_dmi_short_signal = false
+    
     adx_strong = adx > dmi_adx_threshold
+    adx_rising_calc = adx > adx[dmi_adx_period]
     
     if dmi_signal_type == "DI Cross"
-        dmi_short_signal := di_cross_short
+        current_dmi_long_signal := di_cross_long
+        current_dmi_short_signal := di_cross_short
     else if dmi_signal_type == "ADX Level"
-        dmi_short_signal := adx_strong
+        current_dmi_long_signal := adx_strong and diplus > diminus
+        current_dmi_short_signal := adx_strong and diminus > diplus
     else if dmi_signal_type == "Both"
-        dmi_short_signal := di_cross_short and adx_strong
-    else
-        dmi_short_signal := false
+        current_dmi_long_signal := di_cross_long and adx_strong
+        current_dmi_short_signal := di_cross_short and adx_strong
+    else if dmi_signal_type == "ADX Rising"
+        current_dmi_long_signal := adx_rising_calc and diplus > diminus
+        current_dmi_short_signal := adx_rising_calc and diminus > diplus
+    
+    // Apply ADX Rising filter if enabled
+    if dmi_adx_rising
+        current_dmi_long_signal := current_dmi_long_signal and adx_rising_calc
+        current_dmi_short_signal := current_dmi_short_signal and adx_rising_calc
+    
+    // Signal Memory Logic
+    if current_dmi_long_signal or current_dmi_short_signal
+        dmi_signal_bar := bar_index
+    
+    dmi_memory_active = dmi_signal_memory and bar_index - dmi_signal_bar <= dmi_memory_bars
+    dmi_long_signal := current_dmi_long_signal or (dmi_memory_active and diplus > diminus)
+    dmi_short_signal := current_dmi_short_signal or (dmi_memory_active and diminus > diplus)
 
 // Chaikin Money Flow
 chaikin_long_signal = true
@@ -1245,42 +1574,188 @@ if useMACD
 qqe_long_signal = useQQE ? (qqe_trend == 1 and qqe_trend[1] != 1) : true
 qqe_short_signal = useQQE ? (qqe_trend == -1 and qqe_trend[1] != -1) : true
 
-// Levels Signal
+// PROFESSIONAL LEVELS IMPLEMENTATION - Support/Resistance Detection
 levels_long_signal = true
-if useLevels
-    support_level = ta.lowest(low, level_lookback)
-    price_near_support = math.abs(close - support_level) / close * 100 < level_proximity
-    levels_long_signal := price_near_support
-
 levels_short_signal = true
-if useLevels
-    resistance_level = ta.highest(high, level_lookback)
-    price_near_resistance = math.abs(close - resistance_level) / close * 100 < level_proximity
-    levels_short_signal := price_near_resistance
 
-// Divergence Detection
-[bull_div, bear_div] = detect_divergence(close, rsi1_value, div_lookback)
-divergence_long_signal = useDivergence ? bull_div : true
-divergence_short_signal = useDivergence ? bear_div : true
+if useLevels
+    // Enhanced settings for level detection
+    pivot_left = 5
+    pivot_right = 5
+    level_tolerance_percent = input.float(0.3, "Level Tolerance %", minval=0.1, maxval=1.0, step=0.1, group=levels_group)
+    
+    // Find pivot highs and lows
+    pivot_high = ta.pivothigh(high, pivot_left, pivot_right)
+    pivot_low = ta.pivotlow(low, pivot_left, pivot_right)
+    
+    // Arrays to store levels and their touch counts
+    var array<float> resistance_levels = array.new<float>()
+    var array<int> resistance_touches = array.new<int>()
+    var array<float> support_levels = array.new<float>()
+    var array<int> support_touches = array.new<int>()
+    
+    // Add new pivot high as potential resistance
+    if not na(pivot_high)
+        level_found = false
+        level_index = -1
+        
+        // Check if this level already exists (within tolerance)
+        if array.size(resistance_levels) > 0
+            for i = 0 to array.size(resistance_levels) - 1
+                existing_level = array.get(resistance_levels, i)
+                if math.abs(pivot_high - existing_level) / existing_level * 100 <= level_tolerance_percent
+                    level_found := true
+                    level_index := i
+                    break
+        
+        if level_found and level_index >= 0
+            // Increment touch count for existing level
+            current_touches = array.get(resistance_touches, level_index)
+            array.set(resistance_touches, level_index, current_touches + 1)
+            // Update level to average price
+            existing_level = array.get(resistance_levels, level_index)
+            new_level = (existing_level * current_touches + pivot_high) / (current_touches + 1)
+            array.set(resistance_levels, level_index, new_level)
+        else
+            // Add new resistance level
+            array.push(resistance_levels, pivot_high)
+            array.push(resistance_touches, 1)
+    
+    // Add new pivot low as potential support
+    if not na(pivot_low)
+        level_found = false
+        level_index = -1
+        
+        // Check if this level already exists (within tolerance)
+        if array.size(support_levels) > 0
+            for i = 0 to array.size(support_levels) - 1
+                existing_level = array.get(support_levels, i)
+                if math.abs(pivot_low - existing_level) / existing_level * 100 <= level_tolerance_percent
+                    level_found := true
+                    level_index := i
+                    break
+        
+        if level_found and level_index >= 0
+            // Increment touch count for existing level
+            current_touches = array.get(support_touches, level_index)
+            array.set(support_touches, level_index, current_touches + 1)
+            // Update level to average price
+            existing_level = array.get(support_levels, level_index)
+            new_level = (existing_level * current_touches + pivot_low) / (current_touches + 1)
+            array.set(support_levels, level_index, new_level)
+        else
+            // Add new support level
+            array.push(support_levels, pivot_low)
+            array.push(support_touches, 1)
+    
+    // Clean old levels (keep only recent X levels)
+    max_levels = 20
+    if array.size(resistance_levels) > max_levels
+        array.shift(resistance_levels)
+        array.shift(resistance_touches)
+    if array.size(support_levels) > max_levels
+        array.shift(support_levels)
+        array.shift(support_touches)
+    
+    // Check proximity to significant levels for signals
+    near_resistance = false
+    near_support = false
+    
+    if array.size(resistance_levels) > 0
+        for i = 0 to array.size(resistance_levels) - 1
+            touches = array.get(resistance_touches, i)
+            if touches >= level_min_touches
+                level_price = array.get(resistance_levels, i)
+                distance_percent = math.abs(close - level_price) / close * 100
+                if distance_percent <= level_proximity
+                    near_resistance := true
+                    break
+    
+    if array.size(support_levels) > 0
+        for i = 0 to array.size(support_levels) - 1
+            touches = array.get(support_touches, i)
+            if touches >= level_min_touches
+                level_price = array.get(support_levels, i)
+                distance_percent = math.abs(close - level_price) / close * 100
+                if distance_percent <= level_proximity
+                    near_support := true
+                    break
+    
+    // Generate signals based on level interaction
+    levels_long_signal := near_support  // Buy near support
+    levels_short_signal := near_resistance  // Sell near resistance
+
+// ENHANCED Divergence Detection for multiple indicators with Signal Memory
+divergence_long_signal = true
+divergence_short_signal = true
+
+if useDivergence
+    current_div_long_signal = false
+    current_div_short_signal = false
+    
+    // RSI Divergence
+    if div_rsi and useRSI1
+        [rsi_bull_div, rsi_bear_div] = detect_divergence_professional(close, rsi1_value, div_pivot_lookback, div_min_pivot_distance)
+        current_div_long_signal := current_div_long_signal or rsi_bull_div
+        current_div_short_signal := current_div_short_signal or rsi_bear_div
+    
+    // MACD Divergence - NEWLY IMPLEMENTED
+    if div_macd and useMACD
+        [macd_bull_div, macd_bear_div] = detect_divergence_professional(close, macd_line, div_pivot_lookback, div_min_pivot_distance)
+        current_div_long_signal := current_div_long_signal or macd_bull_div
+        current_div_short_signal := current_div_short_signal or macd_bear_div
+    
+    // MFI Divergence - NEWLY IMPLEMENTED
+    if div_mfi and useMFI
+        [mfi_bull_div, mfi_bear_div] = detect_divergence_professional(close, mfi_val, div_pivot_lookback, div_min_pivot_distance)
+        current_div_long_signal := current_div_long_signal or mfi_bull_div
+        current_div_short_signal := current_div_short_signal or mfi_bear_div
+    
+    // CCI Divergence - NEWLY IMPLEMENTED
+    if div_cci and useCCI
+        [cci_bull_div, cci_bear_div] = detect_divergence_professional(close, cci_val, div_pivot_lookback, div_min_pivot_distance)
+        current_div_long_signal := current_div_long_signal or cci_bull_div
+        current_div_short_signal := current_div_short_signal or cci_bear_div
+    
+    // Momentum Divergence - NEWLY IMPLEMENTED
+    if div_momentum and useMomentum
+        [momentum_bull_div, momentum_bear_div] = detect_divergence_professional(close, momentum_val, div_pivot_lookback, div_min_pivot_distance)
+        current_div_long_signal := current_div_long_signal or momentum_bull_div
+        current_div_short_signal := current_div_short_signal or momentum_bear_div
+    
+    // OBV Divergence - NEWLY IMPLEMENTED (simple OBV calculation)
+    if div_obv
+        obv_val = ta.cum(math.sign(ta.change(close)) * volume)
+        [obv_bull_div, obv_bear_div] = detect_divergence_professional(close, obv_val, div_pivot_lookback, div_min_pivot_distance)
+        current_div_long_signal := current_div_long_signal or obv_bull_div
+        current_div_short_signal := current_div_short_signal or obv_bear_div
+    
+    // Signal Memory for Divergences
+    if current_div_long_signal or current_div_short_signal
+        divergence_signal_bar := bar_index
+    
+    div_memory_active = div_signal_memory and bar_index - divergence_signal_bar <= div_memory_bars
+    divergence_long_signal := current_div_long_signal or (div_memory_active and current_div_long_signal)
+    divergence_short_signal := current_div_short_signal or (div_memory_active and current_div_short_signal)
 
 // Candle Patterns
 candle_long_signal = true
 if useCandlePatterns
-    bull_hammer = use_hammer and is_hammer() and close > open
-    bull_engulfing = use_engulfing and is_bullish_engulfing()
-    bull_doji = use_doji and is_doji() and close > ta.sma(close, 20)
-    bull_morning_star = use_morning_evening_star and is_morning_star()
-    bull_soldiers = use_three_soldiers_crows and is_three_white_soldiers()
+    bull_hammer = use_hammer and f_isHammer() and close > open
+    bull_engulfing = use_engulfing and f_isEngulfingBull()
+    bull_doji = use_doji and f_isDoji() and close > ta.sma(close, 20)
+    bull_morning_star = use_morning_evening_star and f_isMorningStar()
+    bull_soldiers = use_three_soldiers_crows and f_isThreeWhiteSoldiers()
     
     candle_long_signal := bull_hammer or bull_engulfing or bull_doji or bull_morning_star or bull_soldiers
 
 candle_short_signal = true
 if useCandlePatterns
-    bear_hammer = use_hammer and is_hammer() and close < open
-    bear_engulfing = use_engulfing and is_bearish_engulfing()
-    bear_doji = use_doji and is_doji() and close < ta.sma(close, 20)
-    bear_evening_star = use_morning_evening_star and is_evening_star()
-    bear_crows = use_three_soldiers_crows and is_three_black_crows()
+    bear_hammer = use_hammer and f_isHammer() and close < open
+    bear_engulfing = use_engulfing and f_isEngulfingBear()
+    bear_doji = use_doji and f_isDoji() and close < ta.sma(close, 20)
+    bear_evening_star = use_morning_evening_star and f_isEveningStar()
+    bear_crows = use_three_soldiers_crows and f_isThreeBlackCrows()
     
     candle_short_signal := bear_hammer or bear_engulfing or bear_doji or bear_evening_star or bear_crows
 
@@ -1316,13 +1791,13 @@ if useExternal
         external_short_signal := false
 
 // ===============================
-// FINAL SIGNAL CONDITIONS - EXPANDED
+// FINAL SIGNAL CONDITIONS - FIXED: COMPLETE INDICATORS COUNT
 // ===============================
-// Count active indicators for proper filtering (Fixed: use intermediate calculations)
+// Count ALL active indicators for proper filtering
 rsi_count = (useRSI1 ? 1 : 0) + (useRSI2 ? 1 : 0) + (useRSI3 ? 1 : 0)
-st_count = (useST1 ? 1 : 0) + (useST2 ? 1 : 0) + (useST3 ? 1 : 0)
+st_count = (useST1 ? 1 : 0) + (useST2 ? 1 : 0) + (useST3 ? 1 : 0) + (useSupertrend ? 1 : 0)
 filter_count = (useVolumeFilter ? 1 : 0) + (useVolatilityFilter ? 1 : 0) + (useHighLowFilter ? 1 : 0) + (useATRChangeFilter ? 1 : 0) + (useBlockIfWorse ? 1 : 0)
-basic_count = (usePinBarMA ? 1 : 0) + (useSupertrend ? 1 : 0) + (useConsolidation ? 1 : 0) + (useMA ? 1 : 0) + (useChannels ? 1 : 0)
+basic_count = (usePinBarMA ? 1 : 0) + (useConsolidation ? 1 : 0) + (useMA ? 1 : 0) + (useChannels ? 1 : 0)
 osc_count = (useRVI ? 1 : 0) + (useMFI ? 1 : 0) + (useStochastic ? 1 : 0) + (useCCI ? 1 : 0) + (useMomentum ? 1 : 0)
 dyn_count = (useDynamicRSI ? 1 : 0) + (useDynamicMFI ? 1 : 0) + (useSMIO ? 1 : 0) + (useDMI ? 1 : 0) + (useChaikin ? 1 : 0)
 adv_count = (useBOP ? 1 : 0) + (useMACD ? 1 : 0) + (useLevels ? 1 : 0) + (useQQE ? 1 : 0) + (useDivergence ? 1 : 0)
@@ -1330,19 +1805,19 @@ pattern_count = (useCandlePatterns ? 1 : 0) + (useLRC ? 1 : 0) + (useExternal ? 
 
 active_indicators_count = rsi_count + st_count + filter_count + basic_count + osc_count + dyn_count + adv_count + pattern_count
 
-// Comprehensive signal combination (Fixed: break into logical groups)
+// Comprehensive signal combination - FIXED: ALL SIGNALS INCLUDED
 // RSI signals group
 rsi_signals_long = rsi1_long_signal and rsi2_long_signal and rsi3_long_signal
 rsi_signals_short = rsi1_short_signal and rsi2_short_signal and rsi3_short_signal
 
 // SuperTrend signals group  
-st_signals_long = st1_long_signal and st2_long_signal and st3_long_signal
-st_signals_short = st1_short_signal and st2_short_signal and st3_short_signal
+st_signals_long = st1_long_signal and st2_long_signal and st3_long_signal and supertrend_long_signal
+st_signals_short = st1_short_signal and st2_short_signal and st3_short_signal and supertrend_short_signal
 
 // Filter signals group
-filter_signals = volume_condition_result and volatility_condition_result and highlow_long_signal and atr_change_signal and consolidation_signal
-filter_signals_long = filter_signals and block_worse_long_signal and pinbar_ma_long_signal and supertrend_long_signal
-filter_signals_short = filter_signals and block_worse_short_signal and pinbar_ma_short_signal and supertrend_short_signal
+filter_signals = volume_condition_result and volatility_condition_result and atr_change_signal and consolidation_signal
+filter_signals_long = filter_signals and highlow_long_signal and block_worse_long_signal and pinbar_ma_long_signal
+filter_signals_short = filter_signals and highlow_short_signal and block_worse_short_signal and pinbar_ma_short_signal
 
 // Core indicators group
 core_signals_long = ma_long_signal and channels_long_signal and rvi_long_signal and mfi_long_signal and stoch_long_signal
@@ -1537,7 +2012,7 @@ else
             position_closed := false
 
 // ===============================
-// EXIT MANAGEMENT
+// EXIT MANAGEMENT - FIXED
 // ===============================
 // Calculate TP/SL levels
 tp_percent = changeTakeProfit and order_count >= ifOrdersMoreThan ? newTakeProfitPercent : takeProfitPercent
@@ -1572,121 +2047,82 @@ if useTrailingStop and strategy.position_size != 0
             new_trailing_level = close * (1 + trailingDistance / 100)
             trailing_stop_level := na(trailing_stop_level) ? new_trailing_level : math.min(trailing_stop_level, new_trailing_level)
 
-// ATR based TP/SL
-if (useATRStopLoss or useATRTakeProfit) and strategy.position_size != 0
-    if strategy.position_size > 0
-        atr_tp = useATRTakeProfit ? avg_price + atr_tp_val * atr_tp_multiplier : avg_price * (1 + tp_percent / 100)
-        atr_sl = useATRStopLoss ? avg_price - atr_sl_val * atr_sl_multiplier : avg_price * (1 - sl_percent / 100)
-        
-        // Apply breakeven
-        if breakeven_activated
-            atr_sl := math.max(atr_sl, avg_price * (1 + breakevenLevel / 100))
-        
-        // Apply trailing stop
-        if useTrailingStop and not na(trailing_stop_level)
-            atr_sl := math.max(atr_sl, trailing_stop_level)
-        
-        strategy.exit("Exit L", limit=atr_tp, stop=atr_sl)
+// Combined TP/SL Logic - FIXED: unified approach
+if strategy.position_size != 0
+    base_tp_level = 0.0
+    base_sl_level = 0.0
     
-    if strategy.position_size < 0
-        atr_tp = useATRTakeProfit ? avg_price - atr_tp_val * atr_tp_multiplier : avg_price * (1 - tp_percent / 100)
-        atr_sl = useATRStopLoss ? avg_price + atr_sl_val * atr_sl_multiplier : avg_price * (1 + sl_percent / 100)
-        
-        // Apply breakeven
-        if breakeven_activated
-            atr_sl := math.min(atr_sl, avg_price * (1 - breakevenLevel / 100))
-        
-        // Apply trailing stop
-        if useTrailingStop and not na(trailing_stop_level)
-            atr_sl := math.min(atr_sl, trailing_stop_level)
-        
-        strategy.exit("Exit S", limit=atr_tp, stop=atr_sl)
-
-// Static TP/SL
-else if close_static_tp_sl and strategy.position_size != 0
     if strategy.position_size > 0
-        tp_level = avg_price * (1 + tp_percent / 100)
-        sl_level = avg_price * (1 - sl_percent / 100)
+        // Long position
+        base_tp_level := useATRTakeProfit ? avg_price + atr_tp_val * atr_tp_multiplier : avg_price * (1 + tp_percent / 100)
+        base_sl_level := useATRStopLoss ? avg_price - atr_sl_val * atr_sl_multiplier : avg_price * (1 - sl_percent / 100)
         
         // Apply breakeven
         if breakeven_activated
-            sl_level := math.max(sl_level, avg_price * (1 + breakevenLevel / 100))
+            base_sl_level := math.max(base_sl_level, avg_price * (1 + breakevenLevel / 100))
         
         // Apply trailing stop
         if useTrailingStop and not na(trailing_stop_level)
-            sl_level := math.max(sl_level, trailing_stop_level)
+            base_sl_level := math.max(base_sl_level, trailing_stop_level)
         
-        // Multi TP Logic - FIXED
-        if useMultiTP and enableDCA
-            // For DCA grid, close percent from total position
+        // FIXED Multi TP Logic - using strategy.order with absolute qty only
+        if useMultiTP and close_static_tp_sl
             tp1_price = avg_price * (1 + tp1_percent / 100)
             tp2_price = avg_price * (1 + tp2_percent / 100)
             tp3_price = avg_price * (1 + tp3_percent / 100)
             tp4_price = avg_price * (1 + tp4_percent / 100)
             
             total_qty = math.abs(strategy.position_size)
-            tp1_close_qty = total_qty * tp1_qty / 100
-            tp2_close_qty = total_qty * tp2_qty / 100
-            tp3_close_qty = total_qty * tp3_qty / 100
+            tp1_qty_calc = total_qty * tp1_qty / 100
+            tp2_qty_calc = total_qty * tp2_qty / 100
+            tp3_qty_calc = total_qty * tp3_qty / 100
+            remaining_qty = total_qty - tp1_qty_calc - tp2_qty_calc - tp3_qty_calc
             
-            strategy.exit("TP1 L", qty=tp1_close_qty, limit=tp1_price, stop=sl_level)
-            strategy.exit("TP2 L", qty=tp2_close_qty, limit=tp2_price, stop=sl_level)
-            strategy.exit("TP3 L", qty=tp3_close_qty, limit=tp3_price, stop=sl_level)
-            strategy.exit("TP4 L", limit=tp4_price, stop=sl_level)
-        else if useMultiTP
-            tp1_price = avg_price * (1 + tp1_percent / 100)
-            tp2_price = avg_price * (1 + tp2_percent / 100)
-            tp3_price = avg_price * (1 + tp3_percent / 100)
-            tp4_price = avg_price * (1 + tp4_percent / 100)
+            strategy.order("TP1_L", strategy.short, qty=tp1_qty_calc, limit=tp1_price)
+            strategy.order("TP2_L", strategy.short, qty=tp2_qty_calc, limit=tp2_price)
+            strategy.order("TP3_L", strategy.short, qty=tp3_qty_calc, limit=tp3_price)
+            strategy.order("TP4_L", strategy.short, qty=remaining_qty, limit=tp4_price)
             
-            strategy.exit("TP1 L", qty_percent=tp1_qty, limit=tp1_price, stop=sl_level)
-            strategy.exit("TP2 L", qty_percent=tp2_qty, limit=tp2_price, stop=sl_level)
-            strategy.exit("TP3 L", qty_percent=tp3_qty, limit=tp3_price, stop=sl_level)
-            strategy.exit("TP4 L", qty_percent=100, limit=tp4_price, stop=sl_level)
-        else
-            strategy.exit("Exit L", limit=tp_level, stop=sl_level)
-
-    if strategy.position_size < 0
-        tp_level = avg_price * (1 - tp_percent / 100)
-        sl_level = avg_price * (1 + sl_percent / 100)
+            // Stop loss order
+            strategy.order("SL_L", strategy.short, qty=total_qty, stop=base_sl_level)
+        else if close_static_tp_sl
+            strategy.exit("Exit L", limit=base_tp_level, stop=base_sl_level)
+    
+    else
+        // Short position
+        base_tp_level := useATRTakeProfit ? avg_price - atr_tp_val * atr_tp_multiplier : avg_price * (1 - tp_percent / 100)
+        base_sl_level := useATRStopLoss ? avg_price + atr_sl_val * atr_sl_multiplier : avg_price * (1 + sl_percent / 100)
         
         // Apply breakeven
         if breakeven_activated
-            sl_level := math.min(sl_level, avg_price * (1 - breakevenLevel / 100))
+            base_sl_level := math.min(base_sl_level, avg_price * (1 - breakevenLevel / 100))
         
         // Apply trailing stop
         if useTrailingStop and not na(trailing_stop_level)
-            sl_level := math.min(sl_level, trailing_stop_level)
+            base_sl_level := math.min(base_sl_level, trailing_stop_level)
         
-        // Multi TP Logic - FIXED
-        if useMultiTP and enableDCA
-            // For DCA grid, close percent from total position
+        // FIXED Multi TP Logic - using strategy.order with absolute qty only
+        if useMultiTP and close_static_tp_sl
             tp1_price = avg_price * (1 - tp1_percent / 100)
             tp2_price = avg_price * (1 - tp2_percent / 100)
             tp3_price = avg_price * (1 - tp3_percent / 100)
             tp4_price = avg_price * (1 - tp4_percent / 100)
             
             total_qty = math.abs(strategy.position_size)
-            tp1_close_qty = total_qty * tp1_qty / 100
-            tp2_close_qty = total_qty * tp2_qty / 100
-            tp3_close_qty = total_qty * tp3_qty / 100
+            tp1_qty_calc = total_qty * tp1_qty / 100
+            tp2_qty_calc = total_qty * tp2_qty / 100
+            tp3_qty_calc = total_qty * tp3_qty / 100
+            remaining_qty = total_qty - tp1_qty_calc - tp2_qty_calc - tp3_qty_calc
             
-            strategy.exit("TP1 S", qty=tp1_close_qty, limit=tp1_price, stop=sl_level)
-            strategy.exit("TP2 S", qty=tp2_close_qty, limit=tp2_price, stop=sl_level)
-            strategy.exit("TP3 S", qty=tp3_close_qty, limit=tp3_price, stop=sl_level)
-            strategy.exit("TP4 S", limit=tp4_price, stop=sl_level)
-        else if useMultiTP
-            tp1_price = avg_price * (1 - tp1_percent / 100)
-            tp2_price = avg_price * (1 - tp2_percent / 100)
-            tp3_price = avg_price * (1 - tp3_percent / 100)
-            tp4_price = avg_price * (1 - tp4_percent / 100)
+            strategy.order("TP1_S", strategy.long, qty=tp1_qty_calc, limit=tp1_price)
+            strategy.order("TP2_S", strategy.long, qty=tp2_qty_calc, limit=tp2_price)
+            strategy.order("TP3_S", strategy.long, qty=tp3_qty_calc, limit=tp3_price)
+            strategy.order("TP4_S", strategy.long, qty=remaining_qty, limit=tp4_price)
             
-            strategy.exit("TP1 S", qty_percent=tp1_qty, limit=tp1_price, stop=sl_level)
-            strategy.exit("TP2 S", qty_percent=tp2_qty, limit=tp2_price, stop=sl_level)
-            strategy.exit("TP3 S", qty_percent=tp3_qty, limit=tp3_price, stop=sl_level)
-            strategy.exit("TP4 S", qty_percent=100, limit=tp4_price, stop=sl_level)
-        else
-            strategy.exit("Exit S", limit=tp_level, stop=sl_level)
+            // Stop loss order
+            strategy.order("SL_S", strategy.long, qty=total_qty, stop=base_sl_level)
+        else if close_static_tp_sl
+            strategy.exit("Exit S", limit=base_tp_level, stop=base_sl_level)
 
 // ===============================
 // CLOSE SIGNALS - EXPANDED
@@ -1758,27 +2194,51 @@ if usePyramiding and strategy.position_size != 0 and not position_closed
         if strategy.position_size < 0 and all_short_signals and basic_conditions
             strategy.entry("Pyramid S", strategy.short)
 
-// Reverse Orders on SL
+// FIXED Reverse Orders on SL
 if useReverseOrderOnSL and strategy.closedtrades > 0
     last_trade = strategy.closedtrades - 1
     last_profit = strategy.closedtrades.profit(last_trade)
     
-    if last_profit < 0 and barstate.isconfirmed
-        if strategy.closedtrades.size(last_trade) > 0
-            strategy.entry("Rev S", strategy.short)
-        else
-            strategy.entry("Rev L", strategy.long)
+    if last_profit < 0 and barstate.isconfirmed and strategy.position_size == 0
+        last_size = strategy.closedtrades.size(last_trade)
+        reverse_qty = math.abs(last_size) * reverse_qty_percent / 100
+        
+        if last_size > 0  // Previous was long, reverse to short
+            strategy.entry("Rev S", strategy.short, qty=reverse_qty)
+        else  // Previous was short, reverse to long
+            strategy.entry("Rev L", strategy.long, qty=reverse_qty)
+        
+        // Reset state variables for new position
+        entry_price := na
+        order_count := 0
+        total_position_size := 0.0
+        weighted_avg_price := 0.0
+        trailing_stop_level := na
+        breakeven_activated := false
+        position_closed := false
 
-// Reverse Orders on BE
+// FIXED Reverse Orders on BE
 if useReverseOrderOnBE and strategy.closedtrades > 0 and breakeven_activated
     last_trade = strategy.closedtrades - 1
     last_profit = strategy.closedtrades.profit(last_trade)
     
-    if last_profit >= 0 and last_profit <= avg_price * breakevenLevel / 100 and barstate.isconfirmed
-        if strategy.closedtrades.size(last_trade) > 0
-            strategy.entry("Rev BE S", strategy.short)
-        else
-            strategy.entry("Rev BE L", strategy.long)
+    if last_profit >= 0 and last_profit <= avg_price * breakevenLevel / 100 and barstate.isconfirmed and strategy.position_size == 0
+        last_size = strategy.closedtrades.size(last_trade)
+        reverse_qty = math.abs(last_size) * reverse_qty_percent / 100
+        
+        if last_size > 0  // Previous was long, reverse to short
+            strategy.entry("Rev BE S", strategy.short, qty=reverse_qty)
+        else  // Previous was short, reverse to long
+            strategy.entry("Rev BE L", strategy.long, qty=reverse_qty)
+        
+        // Reset state variables for new position
+        entry_price := na
+        order_count := 0
+        total_position_size := 0.0
+        weighted_avg_price := 0.0
+        trailing_stop_level := na
+        breakeven_activated := false
+        position_closed := false
 
 // Reset variables when position closes
 if strategy.position_size == 0
@@ -1811,8 +2271,8 @@ if showTPSL and strategy.position_size != 0 and barstate.islast
     current_sl_percent = slEqualsTp ? current_tp_percent : stopLossPercent
     
     if strategy.position_size > 0
-        tp_viz = avg_price * (1 + current_tp_percent / 100)
-        sl_viz = avg_price * (1 - current_sl_percent / 100)
+        tp_viz = useATRTakeProfit ? avg_price + atr_tp_val * atr_tp_multiplier : avg_price * (1 + current_tp_percent / 100)
+        sl_viz = useATRStopLoss ? avg_price - atr_sl_val * atr_sl_multiplier : avg_price * (1 - current_sl_percent / 100)
         
         if breakeven_activated
             sl_viz := math.max(sl_viz, avg_price * (1 + breakevenLevel / 100))
@@ -1836,8 +2296,8 @@ if showTPSL and strategy.position_size != 0 and barstate.islast
             line.new(bar_index, tp4_viz, bar_index + 3, tp4_viz, color=color.lime, width=1, style=line.style_dashed)
     
     if strategy.position_size < 0
-        tp_viz = avg_price * (1 - current_tp_percent / 100)
-        sl_viz = avg_price * (1 + current_sl_percent / 100)
+        tp_viz = useATRTakeProfit ? avg_price - atr_tp_val * atr_tp_multiplier : avg_price * (1 - current_tp_percent / 100)
+        sl_viz = useATRStopLoss ? avg_price + atr_sl_val * atr_sl_multiplier : avg_price * (1 + current_sl_percent / 100)
         
         if breakeven_activated
             sl_viz := math.min(sl_viz, avg_price * (1 - breakevenLevel / 100))
@@ -1875,7 +2335,7 @@ plot(useChannels ? channel_upper : na, "Channel Upper", color=color.purple)
 plot(useChannels ? channel_basis : na, "Channel Basis", color=color.gray)
 plot(useChannels ? channel_lower : na, "Channel Lower", color=color.purple)
 
-plot(useSupertrend ? st_val : na, "Supertrend", color=st_trend == 1 ? color.green : color.red, linewidth=2)
+plot(useSupertrend ? st_line : na, "Supertrend", color=st_direction == 1 ? color.green : color.red, linewidth=2)
 
 // Plot SuperTrend instances
 plot(useST1 ? st1_line : na, "ST1", color=st1_direction == 1 ? color.lime : color.maroon, linewidth=1)
@@ -1887,7 +2347,7 @@ plotshape(close_parabolic_sar ? sar_val : na, style=shape.circle, location=locat
 // ===============================
 // ALERTS - FIXED: use final conditions
 // ===============================
-// Entry alerts (Fixed: use intermediate variables for long strings)
+// Entry alerts
 if final_long_condition
     if enableDCA and sendAlertFirstOrder
         base_msg = '{"action": "LONG", "symbol": "' + syminfo.ticker + '"'
@@ -1916,7 +2376,7 @@ if final_short_condition
         alert_msg = base_msg + price_msg
         alert(alert_msg, alert.freq_once_per_bar)
 
-// Exit alerts (Fixed: use intermediate variables)
+// Exit alerts
 if strategy.position_size[1] != 0 and strategy.position_size == 0
     base_msg = '{"action": "CLOSE", "symbol": "' + syminfo.ticker + '"'
     price_msg = ', "price": ' + str.tostring(close) + '}'
