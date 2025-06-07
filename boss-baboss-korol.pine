@@ -670,78 +670,82 @@ rsi2_value_calc = rsi2_tf == "" ? ta.rsi(rsi2_source_calc, rsi2_length) : reques
 rsi3_source_calc = rsi3_use_btc_source ? btc_close : close
 rsi3_value_calc = rsi3_tf == "" ? ta.rsi(rsi3_source_calc, rsi3_length) : request.security(syminfo.tickerid, rsi3_tf, ta.rsi(rsi3_source_calc, rsi3_length))
 
-// FIXED SuperTrend calculations with proper parameter passing
-// Legacy SuperTrend - FIXED parameter passing
+// FIXED SuperTrend calculations with proper if/else blocks
+// Legacy SuperTrend
 [st_legacy_new_line, st_legacy_new_dir] = calculate_supertrend(high, low, close, supertrend_factor, supertrend_period, st_legacy_direction, st_legacy_line)
 st_legacy_line := st_legacy_new_line
 st_legacy_direction := st_legacy_new_dir
 
-// ST1 with multi-timeframe - FIXED parameter passing
+// ST1 with multi-timeframe - FIXED with if/else
 get_st1_data() =>
     st1_high_src = st1_use_btc_source ? btc_high : high
     st1_low_src = st1_use_btc_source ? btc_low : low  
     st1_close_src = st1_use_btc_source ? btc_close : close
     [st1_high_src, st1_low_src, st1_close_src]
 
-[st1_high_calc, st1_low_calc, st1_close_calc] = st1_tf == "" ? get_st1_data() : request.security(syminfo.tickerid, st1_tf, get_st1_data())
+[st1_high_calc, st1_low_calc, st1_close_calc] = if st1_tf == ""
+    get_st1_data()
+else
+    request.security(syminfo.tickerid, st1_tf, get_st1_data())
+
 [st1_new_line, st1_new_dir] = calculate_supertrend(st1_high_calc, st1_low_calc, st1_close_calc, st1_factor, st1_period, st1_saved_direction, st1_saved_line)
 st1_saved_line := st1_new_line
 st1_saved_direction := st1_new_dir
 
-// ST2 with multi-timeframe - FIXED parameter passing
+// ST2 with multi-timeframe - FIXED with if/else
 get_st2_data() =>
     st2_high_src = st2_use_btc_source ? btc_high : high
     st2_low_src = st2_use_btc_source ? btc_low : low
     st2_close_src = st2_use_btc_source ? btc_close : close
     [st2_high_src, st2_low_src, st2_close_src]
 
-if st2_tf == ""
-    [st2_high_calc, st2_low_calc, st2_close_calc] = get_st2_data()
+[st2_high_calc, st2_low_calc, st2_close_calc] = if st2_tf == ""
+    get_st2_data()
 else
-    [st2_high_calc, st2_low_calc, st2_close_calc] = request.security(syminfo.tickerid, st2_tf, get_st2_data())
+    request.security(syminfo.tickerid, st2_tf, get_st2_data())
 
 [st2_new_line, st2_new_dir] = calculate_supertrend(st2_high_calc, st2_low_calc, st2_close_calc, st2_factor, st2_period, st2_saved_direction, st2_saved_line)
 st2_saved_line := st2_new_line
 st2_saved_direction := st2_new_dir
 
-// ST3 with multi-timeframe - FIXED parameter passing
+// ST3 with multi-timeframe - FIXED with if/else
 get_st3_data() =>
     st3_high_src = st3_use_btc_source ? btc_high : high
     st3_low_src = st3_use_btc_source ? btc_low : low
     st3_close_src = st3_use_btc_source ? btc_close : close
     [st3_high_src, st3_low_src, st3_close_src]
 
-if st3_tf == ""
-    [st3_high_calc, st3_low_calc, st3_close_calc] = get_st3_data()
+[st3_high_calc, st3_low_calc, st3_close_calc] = if st3_tf == ""
+    get_st3_data()
 else
-    [st3_high_calc, st3_low_calc, st3_close_calc] = request.security(syminfo.tickerid, st3_tf, get_st3_data())
+    request.security(syminfo.tickerid, st3_tf, get_st3_data())
 
 [st3_new_line, st3_new_dir] = calculate_supertrend(st3_high_calc, st3_low_calc, st3_close_calc, st3_factor, st3_period, st3_saved_direction, st3_saved_line)
 st3_saved_line := st3_new_line
 st3_saved_direction := st3_new_dir
 
-// Moving Averages with multi-timeframe
+// Moving Averages with multi-timeframe - FIXED
 get_ma_data() =>
     ma_fast_calc = ma_function(close, ma_fast_length, ma_fast_type)
     ma_slow_calc = ma_function(close, ma_slow_length, ma_slow_type)
     [ma_fast_calc, ma_slow_calc]
 
-if ma_tf == ""
-    [ma_fast_value_calc, ma_slow_value_calc] = get_ma_data()
+[ma_fast_value_calc, ma_slow_value_calc] = if ma_tf == ""
+    get_ma_data()
 else
-    [ma_fast_value_calc, ma_slow_value_calc] = request.security(syminfo.tickerid, ma_tf, get_ma_data())
+    request.security(syminfo.tickerid, ma_tf, get_ma_data())
 
-// Channels with multi-timeframe
+// Channels with multi-timeframe - FIXED
 get_channel_data() =>
     if channel_type == "Bollinger Bands"
         bollinger_bands(close, channel_length, channel_multiplier)
     else
         keltner_channel(close, channel_length, channel_multiplier)
 
-if channel_tf == ""
-    [channel_upper_calc, channel_basis_calc, channel_lower_calc] = get_channel_data()
+[channel_upper_calc, channel_basis_calc, channel_lower_calc] = if channel_tf == ""
+    get_channel_data()
 else
-    [channel_upper_calc, channel_basis_calc, channel_lower_calc] = request.security(syminfo.tickerid, channel_tf, get_channel_data())
+    request.security(syminfo.tickerid, channel_tf, get_channel_data())
 
 // Stochastic
 stoch_k_raw = ta.stoch(close, high, low, stoch_k_length)
@@ -817,7 +821,7 @@ volatility_calc = ta.stdev(close, volatility_length) / ta.sma(close, volatility_
 atr_current_calc = ta.atr(14)
 atr_past_calc = ta.sma(ta.atr(14), atr_change_period)
 
-// Candle Patterns with MTF
+// Candle Patterns with MTF - FIXED
 get_candle_data() =>
     hammer = f_isHammer()
     engulfing_bull = f_isEngulfingBull()
@@ -825,10 +829,10 @@ get_candle_data() =>
     doji = f_isDoji()
     [hammer, engulfing_bull, engulfing_bear, doji]
 
-if cp_tf == ""
-    [hammer_calc, engulfing_bull_calc, engulfing_bear_calc, doji_calc] = get_candle_data()
+[hammer_calc, engulfing_bull_calc, engulfing_bear_calc, doji_calc] = if cp_tf == ""
+    get_candle_data()
 else
-    [hammer_calc, engulfing_bull_calc, engulfing_bear_calc, doji_calc] = request.security(syminfo.tickerid, cp_tf, get_candle_data())
+    request.security(syminfo.tickerid, cp_tf, get_candle_data())
 
 // ===============================
 // NEW SIGNAL ARCHITECTURE - COUNTING SYSTEM
@@ -1074,7 +1078,7 @@ if use_st3
     if st3_short_signal_calc
         met_entry_conditions_short += 1
 
-// Moving Averages
+// Moving Averages - FIXED
 if use_ma
     active_entry_conditions_long += 1
     active_entry_conditions_short += 1
@@ -1110,7 +1114,7 @@ if use_ma
     if ma_short_signal_calc
         met_entry_conditions_short += 1
 
-// Channels
+// Channels - FIXED
 if use_channels
     active_entry_conditions_long += 1
     active_entry_conditions_short += 1
@@ -1564,7 +1568,7 @@ if use_divergences
     if div_short_signal_calc
         met_entry_conditions_short += 1
 
-// Candlestick Patterns
+// Candlestick Patterns - FIXED
 if use_candle_patterns
     active_entry_conditions_long += 1
     active_entry_conditions_short += 1
