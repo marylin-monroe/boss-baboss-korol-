@@ -1,27 +1,16 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © polypokrbinc
 //@version=5
-strategy("Multi DCA Strategy [COMPLETE] - Dimkud Clone", 
-         shorttitle="Multi DCA Complete", 
-         overlay=true, 
-         pyramiding=20, 
-         default_qty_type=strategy.percent_of_equity, 
-         default_qty_value=5, 
-         initial_capital=10000, 
-         commission_type=strategy.commission.percent, 
-         commission_value=0.1,
-         calc_on_order_fills=true,
-         calc_on_every_tick=false,
-         max_labels_count=500,
-         max_lines_count=500,
-         max_bars_back=5000,
-         process_orders_on_close=true)
+
+strategy("boss/baboss [korol]",shorttitle="korol", overlay=true,pyramiding=20,default_qty_type=strategy.percent_of_equity,default_qty_value=5,initial_capital=10000,commission_type=strategy.commission.percent,commission_value=0.1,calc_on_order_fills=true,calc_on_every_tick=false,max_labels_count=500, max_lines_count=500,max_bars_back=5000,process_orders_on_close=true, fill_orders_on_standard_ohlc = true)
+              
 
 // ===============================
 // CSV IMPORT/EXPORT FUNCTIONALITY
 // ===============================
-csv_group = "═══════════ CSV Import/Export ═══════════"
-csv_string = input.text_area("", "Paste CSV String Here (for import)", group=csv_group)
-show_export = input.bool(false, "Show Export String", group=csv_group)
-export_button = input.bool(false, "Generate Export String", group=csv_group)
+csv_string = input.text_area("", "Paste CSV String Here (for import)")
+show_export = input.bool(false, "Show Export String")
+export_button = input.bool(false, "Generate Export String")
 
 // ===============================
 // BASIC TRADING SETTINGS
@@ -676,76 +665,152 @@ rsi3_value_calc = rsi3_tf == "" ? ta.rsi(rsi3_source_calc, rsi3_length) : reques
 st_legacy_line := st_legacy_new_line
 st_legacy_direction := st_legacy_new_dir
 
-// ST1 with multi-timeframe - FIXED with if/else
-get_st1_data() =>
-    st1_high_src = st1_use_btc_source ? btc_high : high
-    st1_low_src = st1_use_btc_source ? btc_low : low  
-    st1_close_src = st1_use_btc_source ? btc_close : close
-    [st1_high_src, st1_low_src, st1_close_src]
+// ST1 with multi-timeframe - FIXED
+get_st1_data_content() => 
+    st1_high_src_local = st1_use_btc_source ? btc_high : high
+    st1_low_src_local  = st1_use_btc_source ? btc_low  : low  
+    st1_close_src_local= st1_use_btc_source ? btc_close: close
+    [st1_high_src_local, st1_low_src_local, st1_close_src_local]
 
-[st1_high_calc, st1_low_calc, st1_close_calc] = if st1_tf == ""
-    get_st1_data()
+// Declare calculation variables for ST1 BEFORE use
+float st1_high_calc = na 
+float st1_low_calc = na
+float st1_close_calc = na
+
+st1_target_tf_resolved = st1_tf == "" ? timeframe.period : st1_tf
+[st1_h_requested, st1_l_requested, st1_c_requested] = request.security(syminfo.tickerid, st1_target_tf_resolved, get_st1_data_content())
+
+if st1_tf == "" or st1_tf == timeframe.period // Corrected condition to use current data if timeframe matches
+    st1_high_calc  := st1_h_requested 
+    st1_low_calc   := st1_l_requested
+    st1_close_calc := st1_c_requested
 else
-    request.security(syminfo.tickerid, st1_tf, get_st1_data())
+    st1_high_calc  := st1_h_requested 
+    st1_low_calc   := st1_l_requested
+    st1_close_calc := st1_c_requested
 
+// Assuming st1_saved_direction and st1_saved_line are global var states for ST1
 [st1_new_line, st1_new_dir] = calculate_supertrend(st1_high_calc, st1_low_calc, st1_close_calc, st1_factor, st1_period, st1_saved_direction, st1_saved_line)
 st1_saved_line := st1_new_line
 st1_saved_direction := st1_new_dir
 
-// ST2 with multi-timeframe - FIXED with if/else
-get_st2_data() =>
-    st2_high_src = st2_use_btc_source ? btc_high : high
-    st2_low_src = st2_use_btc_source ? btc_low : low
-    st2_close_src = st2_use_btc_source ? btc_close : close
-    [st2_high_src, st2_low_src, st2_close_src]
+// ST2 with multi-timeframe - FIXED
+get_st2_data_content() => 
+    st2_high_src_local = st2_use_btc_source ? btc_high : high
+    st2_low_src_local  = st2_use_btc_source ? btc_low  : low
+    st2_close_src_local= st2_use_btc_source ? btc_close: close
+    [st2_high_src_local, st2_low_src_local, st2_close_src_local]
 
-[st2_high_calc, st2_low_calc, st2_close_calc] = if st2_tf == ""
-    get_st2_data()
+// Declare calculation variables for ST2 BEFORE use
+float st2_high_calc = na 
+float st2_low_calc = na
+float st2_close_calc = na
+
+st2_target_tf_resolved = st2_tf == "" ? timeframe.period : st2_tf
+[st2_h_requested, st2_l_requested, st2_c_requested] = request.security(syminfo.tickerid, st2_target_tf_resolved, get_st2_data_content())
+
+if st2_tf == "" or st2_tf == timeframe.period // Corrected condition
+    st2_high_calc  := st2_h_requested
+    st2_low_calc   := st2_l_requested
+    st2_close_calc := st2_c_requested
 else
-    request.security(syminfo.tickerid, st2_tf, get_st2_data())
+    st2_high_calc  := st2_h_requested
+    st2_low_calc   := st2_l_requested
+    st2_close_calc := st2_c_requested
 
+// Assuming st2_saved_direction and st2_saved_line are global var states for ST2
 [st2_new_line, st2_new_dir] = calculate_supertrend(st2_high_calc, st2_low_calc, st2_close_calc, st2_factor, st2_period, st2_saved_direction, st2_saved_line)
 st2_saved_line := st2_new_line
 st2_saved_direction := st2_new_dir
 
-// ST3 with multi-timeframe - FIXED with if/else
-get_st3_data() =>
-    st3_high_src = st3_use_btc_source ? btc_high : high
-    st3_low_src = st3_use_btc_source ? btc_low : low
-    st3_close_src = st3_use_btc_source ? btc_close : close
-    [st3_high_src, st3_low_src, st3_close_src]
+// ST3 with multi-timeframe - FIXED
+get_st3_data_content() => 
+    st3_high_src_local = st3_use_btc_source ? btc_high : high
+    st3_low_src_local  = st3_use_btc_source ? btc_low  : low
+    st3_close_src_local= st3_use_btc_source ? btc_close: close
+    [st3_high_src_local, st3_low_src_local, st3_close_src_local]
 
-[st3_high_calc, st3_low_calc, st3_close_calc] = if st3_tf == ""
-    get_st3_data()
+// Declare calculation variables for ST3 BEFORE use
+float st3_high_calc = na 
+float st3_low_calc = na
+float st3_close_calc = na
+
+st3_target_tf_resolved = st3_tf == "" ? timeframe.period : st3_tf
+[st3_h_requested, st3_l_requested, st3_c_requested] = request.security(syminfo.tickerid, st3_target_tf_resolved, get_st3_data_content())
+
+if st3_tf == "" or st3_tf == timeframe.period // Corrected condition
+    st3_high_calc  := st3_h_requested
+    st3_low_calc   := st3_l_requested
+    st3_close_calc := st3_c_requested
 else
-    request.security(syminfo.tickerid, st3_tf, get_st3_data())
+    st3_high_calc  := st3_h_requested
+    st3_low_calc   := st3_l_requested
+    st3_close_calc := st3_c_requested
 
+// Assuming st3_saved_direction and st3_saved_line are global var states for ST3
 [st3_new_line, st3_new_dir] = calculate_supertrend(st3_high_calc, st3_low_calc, st3_close_calc, st3_factor, st3_period, st3_saved_direction, st3_saved_line)
 st3_saved_line := st3_new_line
 st3_saved_direction := st3_new_dir
 
 // Moving Averages with multi-timeframe - FIXED
-get_ma_data() =>
-    ma_fast_calc = ma_function(close, ma_fast_length, ma_fast_type)
-    ma_slow_calc = ma_function(close, ma_slow_length, ma_slow_type)
-    [ma_fast_calc, ma_slow_calc]
 
-[ma_fast_value_calc, ma_slow_value_calc] = if ma_tf == ""
-    get_ma_data()
-else
-    request.security(syminfo.tickerid, ma_tf, get_ma_data())
+get_ma_data_for_current_context() =>
+    ma_fast_local = ma_function(close, ma_fast_length, ma_fast_type) 
+    ma_slow_local = ma_function(close, ma_slow_length, ma_slow_type) 
+    [ma_fast_local, ma_slow_local]
+
+
+float ma_fast_value_calc = na
+float ma_slow_value_calc = na
+
+
+ma_target_tf_for_request = ma_tf == "" ? timeframe.period : ma_tf
+[ma_fast_from_security, ma_slow_from_security] = request.security(syminfo.tickerid, ma_target_tf_for_request, get_ma_data_for_current_context())
+
+
+if ma_tf == "" or ma_tf == timeframe.period 
+    ma_fast_value_calc := ma_fast_from_security 
+    ma_slow_value_calc := ma_slow_from_security
+else 
+    ma_fast_value_calc := ma_fast_from_security
+    ma_slow_value_calc := ma_slow_from_security
 
 // Channels with multi-timeframe - FIXED
-get_channel_data() =>
-    if channel_type == "Bollinger Bands"
-        bollinger_bands(close, channel_length, channel_multiplier)
-    else
-        keltner_channel(close, channel_length, channel_multiplier)
 
-[channel_upper_calc, channel_basis_calc, channel_lower_calc] = if channel_tf == ""
-    get_channel_data()
-else
-    request.security(syminfo.tickerid, channel_tf, get_channel_data())
+get_channel_data_for_current_context() =>
+    // Declare local variables for this function's scope, initialize to na
+    float func_up_local = na
+    float func_basis_local = na
+    float func_low_local = na
+
+    if channel_type == "Bollinger Bands"
+        
+        [up_temp, basis_temp, low_temp] = bollinger_bands(close, channel_length, channel_multiplier)
+        
+        func_up_local := up_temp
+        func_basis_local := basis_temp
+        func_low_local := low_temp
+    else 
+        [up_temp, basis_temp, low_temp] = keltner_channel(close, channel_length, channel_multiplier)
+        func_up_local := up_temp
+        func_basis_local := basis_temp
+        func_low_local := low_temp
+        
+    [func_up_local, func_basis_local, func_low_local]
+
+
+float channel_upper_calc = na
+float channel_basis_calc = na
+float channel_lower_calc = na
+
+channel_target_tf_for_request = channel_tf == "" ? timeframe.period : channel_tf
+
+[ch_up_from_security, ch_basis_from_security, ch_low_from_security] = request.security(syminfo.tickerid, channel_target_tf_for_request, get_channel_data_for_current_context())
+
+
+channel_upper_calc := ch_up_from_security
+channel_basis_calc := ch_basis_from_security
+channel_lower_calc := ch_low_from_security
 
 // Stochastic
 stoch_k_raw = ta.stoch(close, high, low, stoch_k_length)
@@ -822,17 +887,29 @@ atr_current_calc = ta.atr(14)
 atr_past_calc = ta.sma(ta.atr(14), atr_change_period)
 
 // Candle Patterns with MTF - FIXED
-get_candle_data() =>
-    hammer = f_isHammer()
-    engulfing_bull = f_isEngulfingBull()
-    engulfing_bear = f_isEngulfingBear()
-    doji = f_isDoji()
-    [hammer, engulfing_bull, engulfing_bear, doji]
 
-[hammer_calc, engulfing_bull_calc, engulfing_bear_calc, doji_calc] = if cp_tf == ""
-    get_candle_data()
-else
-    request.security(syminfo.tickerid, cp_tf, get_candle_data())
+get_candle_data_for_current_context() =>
+    hammer_local = f_isHammer()
+    engulfing_bull_local = f_isEngulfingBull()
+    engulfing_bear_local = f_isEngulfingBear()
+    doji_local = f_isDoji()
+    [hammer_local, engulfing_bull_local, engulfing_bear_local, doji_local]
+
+
+bool hammer_calc = false 
+bool engulfing_bull_calc = false
+bool engulfing_bear_calc = false
+bool doji_calc = false
+
+
+cp_target_tf_for_request = cp_tf == "" ? timeframe.period : cp_tf
+[cp_hammer_from_security, cp_engulfing_bull_from_security, cp_engulfing_bear_from_security, cp_doji_from_security] = request.security(syminfo.tickerid, cp_target_tf_for_request, get_candle_data_for_current_context())
+
+
+hammer_calc := cp_hammer_from_security
+engulfing_bull_calc := cp_engulfing_bull_from_security
+engulfing_bear_calc := cp_engulfing_bear_from_security
+doji_calc := cp_doji_from_security
 
 // ===============================
 // NEW SIGNAL ARCHITECTURE - COUNTING SYSTEM
