@@ -27,7 +27,7 @@ export_button = input.bool(false, "Generate Export String", group=csv_group)
 // ===============================
 // HELPER FUNCTIONS
 // ===============================
-// Enhanced Moving Average Function with all types - Fixed
+// Enhanced Moving Average Function - FIXED: complex case expressions require if/else structure
 ma_function(src, length, ma_type) =>
     result = 0.0
     if ma_type == "SMA"
@@ -262,13 +262,60 @@ channel_multiplier = input.float(2.0, "Channel Multiplier", minval=0.5, maxval=5
 channel_signal_type = input.string("Touch", "Channel Signal", options=["Touch", "Close Outside", "Breakout"], group=channel_group)
 
 // ===============================
-// RSI SETTINGS
+// RSI SETTINGS - EXPANDED (3 instances)
 // ===============================
-rsi_group = "═══════════ RSI ═══════════"
-useRSI1 = input.bool(false, "Use RSI", group=rsi_group)
-rsi1_length = input.int(14, "RSI Length", minval=2, maxval=100, group=rsi_group)
-rsi1_overbought = input.float(70, "RSI Overbought", minval=50, maxval=90, group=rsi_group)
-rsi1_oversold = input.float(30, "RSI Oversold", minval=10, maxval=50, group=rsi_group)
+rsi_group = "═══════════ RSI Instances ═══════════"
+// RSI 1
+useRSI1 = input.bool(false, "Use RSI #1", group=rsi_group)
+rsi1_length = input.int(14, "RSI #1 Length", minval=2, maxval=100, group=rsi_group)
+rsi1_overbought = input.float(70, "RSI #1 Overbought", minval=50, maxval=90, group=rsi_group)
+rsi1_oversold = input.float(30, "RSI #1 Oversold", minval=10, maxval=50, group=rsi_group)
+rsi1_condition = input.string("Oversold", "RSI #1 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up"], group=rsi_group)
+rsi1_custom_min = input.float(30, "RSI #1 Custom Min", minval=0, maxval=100, group=rsi_group)
+rsi1_custom_max = input.float(70, "RSI #1 Custom Max", minval=0, maxval=100, group=rsi_group)
+rsi1_use_btc_source = input.bool(false, "RSI #1 Use BTCUSDT Source", group=rsi_group)
+
+// RSI 2
+useRSI2 = input.bool(false, "Use RSI #2", group=rsi_group)
+rsi2_length = input.int(21, "RSI #2 Length", minval=2, maxval=100, group=rsi_group)
+rsi2_overbought = input.float(75, "RSI #2 Overbought", minval=50, maxval=90, group=rsi_group)
+rsi2_oversold = input.float(25, "RSI #2 Oversold", minval=10, maxval=50, group=rsi_group)
+rsi2_condition = input.string("Oversold", "RSI #2 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up"], group=rsi_group)
+rsi2_custom_min = input.float(25, "RSI #2 Custom Min", minval=0, maxval=100, group=rsi_group)
+rsi2_custom_max = input.float(75, "RSI #2 Custom Max", minval=0, maxval=100, group=rsi_group)
+rsi2_use_btc_source = input.bool(false, "RSI #2 Use BTCUSDT Source", group=rsi_group)
+
+// RSI 3
+useRSI3 = input.bool(false, "Use RSI #3", group=rsi_group)
+rsi3_length = input.int(7, "RSI #3 Length", minval=2, maxval=100, group=rsi_group)
+rsi3_overbought = input.float(80, "RSI #3 Overbought", minval=50, maxval=90, group=rsi_group)
+rsi3_oversold = input.float(20, "RSI #3 Oversold", minval=10, maxval=50, group=rsi_group)
+rsi3_condition = input.string("Oversold", "RSI #3 Long Condition", options=["Oversold", "Above 50", "Custom Range", "Cross Level Up"], group=rsi_group)
+rsi3_custom_min = input.float(20, "RSI #3 Custom Min", minval=0, maxval=100, group=rsi_group)
+rsi3_custom_max = input.float(80, "RSI #3 Custom Max", minval=0, maxval=100, group=rsi_group)
+rsi3_use_btc_source = input.bool(false, "RSI #3 Use BTCUSDT Source", group=rsi_group)
+
+// ===============================
+// SUPERTREND EXPANDED (3 instances)
+// ===============================
+st_expanded_group = "═══════════ SuperTrend Instances ═══════════"
+// ST 1
+useST1 = input.bool(false, "Use SuperTrend #1", group=st_expanded_group)
+st1_period = input.int(10, "ST #1 Period", minval=1, maxval=50, group=st_expanded_group)
+st1_factor = input.float(3.0, "ST #1 Factor", minval=0.5, maxval=10.0, step=0.1, group=st_expanded_group)
+st1_use_btc_source = input.bool(false, "ST #1 Use BTCUSDT Source", group=st_expanded_group)
+
+// ST 2
+useST2 = input.bool(false, "Use SuperTrend #2", group=st_expanded_group)
+st2_period = input.int(14, "ST #2 Period", minval=1, maxval=50, group=st_expanded_group)
+st2_factor = input.float(2.5, "ST #2 Factor", minval=0.5, maxval=10.0, step=0.1, group=st_expanded_group)
+st2_use_btc_source = input.bool(false, "ST #2 Use BTCUSDT Source", group=st_expanded_group)
+
+// ST 3
+useST3 = input.bool(false, "Use SuperTrend #3", group=st_expanded_group)
+st3_period = input.int(21, "ST #3 Period", minval=1, maxval=50, group=st_expanded_group)
+st3_factor = input.float(2.0, "ST #3 Factor", minval=0.5, maxval=10.0, step=0.1, group=st_expanded_group)
+st3_use_btc_source = input.bool(false, "ST #3 Use BTCUSDT Source", group=st_expanded_group)
 
 // ===============================
 // RVI SETTINGS
@@ -287,6 +334,17 @@ useMFI = input.bool(false, "Use MFI", group=mfi_group)
 mfi_length = input.int(14, "MFI Length", minval=2, maxval=100, group=mfi_group)
 mfi_overbought = input.float(80, "MFI Overbought", minval=50, maxval=90, group=mfi_group)
 mfi_oversold = input.float(20, "MFI Oversold", minval=10, maxval=50, group=mfi_group)
+
+// ===============================
+// STOCHASTIC SETTINGS
+// ===============================
+stoch_group = "═══════════ Stochastic ═══════════"
+useStochastic = input.bool(false, "Use Stochastic", group=stoch_group)
+stoch_k_length = input.int(14, "Stochastic %K Length", minval=1, maxval=100, group=stoch_group)
+stoch_k_smooth = input.int(1, "Stochastic %K Smoothing", minval=1, maxval=10, group=stoch_group)
+stoch_d_smooth = input.int(3, "Stochastic %D Smoothing", minval=1, maxval=10, group=stoch_group)
+stoch_overbought = input.float(80, "Stochastic Overbought", minval=50, maxval=100, group=stoch_group)
+stoch_oversold = input.float(20, "Stochastic Oversold", minval=0, maxval=50, group=stoch_group)
 
 // ===============================
 // CCI SETTINGS
@@ -436,6 +494,17 @@ external_condition = input.string("Above", "Condition", options=["Above", "Below
 external_level = input.float(0, "Level", group=ext_group)
 
 // ===============================
+// BTCUSDT SOURCE DATA
+// ===============================
+btc_group = "═══════════ BTCUSDT Data ═══════════"
+btc_symbol = input.symbol("BINANCE:BTCUSDT", "BTC Symbol", group=btc_group)
+btc_close = request.security(btc_symbol, timeframe.period, close)
+btc_high = request.security(btc_symbol, timeframe.period, high)
+btc_low = request.security(btc_symbol, timeframe.period, low)
+btc_open = request.security(btc_symbol, timeframe.period, open)
+btc_volume = request.security(btc_symbol, timeframe.period, volume)
+
+// ===============================
 // CLOSE CONDITIONS
 // ===============================
 close_group = "═══════════ Close Signals ═══════════"
@@ -445,6 +514,8 @@ close_bb_kc = input.bool(false, "Use Channel Close Signal", group=close_group)
 close_qqe = input.bool(false, "Use QQE Close Signal", group=close_group)
 close_rsi = input.bool(false, "Use RSI Close Signal", group=close_group)
 close_ma_cross = input.bool(false, "Use MA Cross Close Signal", group=close_group)
+close_stoch = input.bool(false, "Use Stochastic Close Signal", group=close_group)
+close_only_profit = input.bool(false, "Close Only in Profit", group=close_group)
 
 // Parabolic SAR settings
 sar_start = input.float(0.02, "SAR Start", minval=0.01, maxval=0.1, step=0.01, group=close_group)
@@ -452,7 +523,7 @@ sar_increment = input.float(0.02, "SAR Increment", minval=0.01, maxval=0.1, step
 sar_maximum = input.float(0.2, "SAR Maximum", minval=0.1, maxval=1.0, step=0.1, group=close_group)
 
 // ===============================
-// CALCULATION FUNCTIONS
+// CALCULATION FUNCTIONS - FIXED: consolidated all function definitions here
 // ===============================
 // Bollinger Bands
 bollinger_bands(src, length, mult) =>
@@ -466,8 +537,232 @@ keltner_channel(src, length, mult) =>
     range_val = ta.atr(length)
     [basis + range_val * mult, basis, basis - range_val * mult]
 
-// Supertrend - Fixed for Pine Script v5
-supertrend(factor, period) =>
+// Enhanced SuperTrend Function with BTC source support
+calculate_supertrend(factor, period, use_btc) =>
+    src_high = use_btc ? btc_high : high
+    src_low = use_btc ? btc_low : low
+    src_close = use_btc ? btc_close : close
+    src_hl2 = (src_high + src_low) / 2
+    
+    atr_val = ta.atr(period)
+    upperBand = src_hl2 + factor * atr_val
+    lowerBand = src_hl2 - factor * atr_val
+    
+    prevLowerBand = nz(lowerBand[1])
+    prevUpperBand = nz(upperBand[1])
+    
+    lb = lowerBand > prevLowerBand or src_close[1] < prevLowerBand ? lowerBand : prevLowerBand
+    ub = upperBand < prevUpperBand or src_close[1] > prevUpperBand ? upperBand : prevUpperBand
+    
+    direction = 1
+    superTrend = 0.0
+    
+    prevSuperTrend = superTrend[1]
+    prevDirection = direction[1]
+    
+    if na(prevSuperTrend)
+        direction := 1
+        superTrend := lb
+    else
+        if prevSuperTrend == prevUpperBand
+            direction := src_close <= ub ? -1 : 1
+        else
+            direction := src_close >= lb ? 1 : -1
+        
+        superTrend := direction == -1 ? ub : lb
+    
+    [superTrend, direction]
+
+// RVI Calculation
+calculate_rvi(length) =>
+    numerator = ta.sma(close - open, length)
+    denominator = ta.sma(high - low, length)
+    rvi_val = denominator == 0 ? 0 : numerator / denominator
+    signal = ta.sma(rvi_val, 4)
+    [rvi_val, signal]
+
+// SMI Ergodic Oscillator
+smi_ergodic(shortLength, longLength, signalLength) =>
+    price = close
+    highestHigh = ta.highest(high, longLength)
+    lowestLow = ta.lowest(low, longLength)
+    
+    priceChangeEMA = ta.ema(ta.ema(price - 0.5 * (highestHigh + lowestLow), shortLength), shortLength)
+    rangeEMA = ta.ema(ta.ema(0.5 * (highestHigh - lowestLow), shortLength), shortLength)
+    
+    smi_val = rangeEMA != 0 ? priceChangeEMA / rangeEMA : 0
+    signal = ta.ema(smi_val, signalLength)
+    
+    [smi_val, signal]
+
+// QQE Calculation - FIXED: Functions cannot modify global var variables
+var float qqe_longband = 0.0
+var float qqe_shortband = 0.0
+var int qqe_trend_state = 0
+
+calculate_qqe(src, length, smoothing, factor, prev_longband, prev_shortband, prev_trend) =>
+    rsi_val = ta.rsi(src, length)
+    rsi_ma = ta.ema(rsi_val, smoothing)
+    
+    atr_rsi = ta.ema(math.abs(rsi_ma[1] - rsi_ma), smoothing)
+    dar = ta.ema(atr_rsi, smoothing) * factor
+    
+    newlongband = rsi_ma - dar
+    newshortband = rsi_ma + dar
+    
+    longband_result = 0.0
+    shortband_result = 0.0
+    
+    if rsi_ma[1] > prev_longband and rsi_ma > prev_longband
+        longband_result := math.max(prev_longband, newlongband)
+    else
+        longband_result := newlongband
+    
+    if rsi_ma[1] < prev_shortband and rsi_ma < prev_shortband
+        shortband_result := math.min(prev_shortband, newshortband)
+    else
+        shortband_result := newshortband
+    
+    cross_1 = ta.cross(longband_result, rsi_ma)
+    cross_2 = ta.cross(rsi_ma, shortband_result)
+    
+    trend_result = 0
+    if cross_2
+        trend_result := 1
+    else if cross_1
+        trend_result := -1
+    else
+        trend_result := prev_trend
+    
+    [rsi_ma, longband_result, shortband_result, trend_result]
+
+// QQE calculation with proper var assignment in global scope
+[qqe_rsi, new_qqe_long, new_qqe_short, new_qqe_trend] = calculate_qqe(close, qqe_rsi_length, qqe_smoothing, qqe_factor, qqe_longband, qqe_shortband, qqe_trend_state)
+
+// Update global var variables outside the function
+qqe_longband := new_qqe_long
+qqe_shortband := new_qqe_short
+qqe_trend_state := new_qqe_trend
+
+// Return final values for use in signals
+qqe_long = new_qqe_long
+qqe_short = new_qqe_short
+qqe_trend = new_qqe_trend
+
+// Dynamic Bands
+dynamic_bands(value, length, mult) =>
+    basis = ta.sma(value, length)
+    dev = mult * ta.stdev(value, length)
+    [basis + dev, basis - dev]
+
+// Balance of Power
+calculate_bop() =>
+    bop_raw = high - low == 0 ? 0 : (close - open) / (high - low)
+    ta.sma(bop_raw, bop_smooth_length)
+
+// Chaikin Money Flow
+calculate_cmf(length) =>
+    mfv = ((close - low) - (high - close)) / (high - low) * volume
+    ta.sma(mfv, length) / ta.sma(volume, length)
+
+// Divergence Detection Function
+detect_divergence(price_series, indicator_series, lookback) =>
+    // Simple divergence implementation
+    ph = ta.pivothigh(price_series, lookback, lookback)
+    pl = ta.pivotlow(price_series, lookback, lookback)
+    ih = ta.pivothigh(indicator_series, lookback, lookback)
+    il = ta.pivotlow(indicator_series, lookback, lookback)
+    
+    bull_div = not na(pl) and not na(il) and pl < pl[1] and il > il[1]
+    bear_div = not na(ph) and not na(ih) and ph > ph[1] and ih < ih[1]
+    
+    [bull_div, bear_div]
+
+// Candle Pattern Functions
+f_isHammer() =>
+    body = math.abs(close - open)
+    lower_shadow = open > close ? close - low : open - low
+    upper_shadow = open > close ? high - open : high - close
+    lower_shadow >= body * 2 and upper_shadow <= body * 0.5
+
+f_isEngulfingBull() =>
+    close[1] < open[1] and close > open and open <= close[1] and close >= open[1]
+
+f_isEngulfingBear() =>
+    close[1] > open[1] and close < open and open >= close[1] and close <= open[1]
+
+f_isDoji() =>
+    body = math.abs(close - open)
+    avg_body = ta.sma(math.abs(close - open), 20)
+    body <= avg_body * 0.1
+
+f_isMorningStar() =>
+    close[2] < open[2] and math.abs(close[1] - open[1]) < (high[1] - low[1]) * 0.3 and close > open and close > (open[2] + close[2]) / 2
+
+f_isEveningStar() =>
+    close[2] > open[2] and math.abs(close[1] - open[1]) < (high[1] - low[1]) * 0.3 and close < open and close < (open[2] + close[2]) / 2
+
+f_isThreeWhiteSoldiers() =>
+    close > open and close[1] > open[1] and close[2] > open[2] and close > close[1] and close[1] > close[2] and open < close[1] and open[1] < close[2]
+
+f_isThreeBlackCrows() =>
+    close < open and close[1] < open[1] and close[2] < open[2] and close < close[1] and close[1] < close[2] and open > close[1] and open[1] > close[2]
+
+// Legacy Supertrend Function - FIXED: removed duplicate definition
+// Function moved to functions section above, removing this duplicate
+
+// ===============================
+// INDICATOR CALCULATIONS
+// ===============================
+// ATR calculations
+atr_val = ta.atr(14)
+atr_sl_val = ta.atr(atr_sl_length)
+atr_tp_val = ta.atr(atr_tp_length)
+
+// Volume and Volatility
+volume_avg = ta.sma(volume, volume_length)
+volatility = ta.stdev(close, vol_length) / ta.sma(close, vol_length) * 100
+
+// Parabolic SAR
+sar_val = ta.sar(sar_start, sar_increment, sar_maximum)
+
+// RSI calculations with BTC source support
+rsi1_source = rsi1_use_btc_source ? btc_close : close
+rsi1_value = ta.rsi(rsi1_source, rsi1_length)
+
+rsi2_source = rsi2_use_btc_source ? btc_close : close
+rsi2_value = ta.rsi(rsi2_source, rsi2_length)
+
+rsi3_source = rsi3_use_btc_source ? btc_close : close
+rsi3_value = ta.rsi(rsi3_source, rsi3_length)
+
+// RSI cross calculations - FIXED: moved after RSI value calculations
+rsi1_cross_up = ta.crossover(rsi1_value, rsi1_oversold)
+rsi1_cross_down = ta.crossunder(rsi1_value, rsi1_overbought)
+rsi2_cross_up = ta.crossover(rsi2_value, rsi2_oversold)
+rsi2_cross_down = ta.crossunder(rsi2_value, rsi2_overbought)
+rsi3_cross_up = ta.crossover(rsi3_value, rsi3_oversold)
+rsi3_cross_down = ta.crossunder(rsi3_value, rsi3_overbought)
+
+// SuperTrend calculations
+[st1_line, st1_direction] = calculate_supertrend(st1_factor, st1_period, st1_use_btc_source)
+[st2_line, st2_direction] = calculate_supertrend(st2_factor, st2_period, st2_use_btc_source)
+[st3_line, st3_direction] = calculate_supertrend(st3_factor, st3_period, st3_use_btc_source)
+
+// MA Cross calculations - FIXED: extract ta.cross functions to global scope for consistency
+ma_cross_under = ta.crossunder(ma_fast_val, ma_slow_val)
+ma_cross_over = ta.crossover(ma_fast_val, ma_slow_val)
+
+// Channels
+[bb_upper, bb_basis, bb_lower] = bollinger_bands(close, channel_length, channel_multiplier)
+[kc_upper, kc_basis, kc_lower] = keltner_channel(close, channel_length, channel_multiplier)
+
+channel_upper = channel_type == "Bollinger Bands" ? bb_upper : kc_upper
+channel_basis = channel_type == "Bollinger Bands" ? bb_basis : kc_basis
+channel_lower = channel_type == "Bollinger Bands" ? bb_lower : kc_lower
+
+// Legacy Supertrend (keeping for compatibility) - FIXED: moved before usage
+legacy_supertrend(factor, period) =>
     src = hl2
     atr = ta.atr(period)
     upperBand = src + factor * atr
@@ -494,140 +789,23 @@ supertrend(factor, period) =>
     superTrend := direction == -1 ? ub : lb
     [direction, superTrend, ub, lb]
 
-// RVI Calculation
-calculate_rvi(length) =>
-    numerator = ta.sma(close - open, length)
-    denominator = ta.sma(high - low, length)
-    rvi = denominator == 0 ? 0 : numerator / denominator
-    signal = ta.sma(rvi, 4)
-    [rvi, signal]
-
-// SMI Ergodic Oscillator
-smi_ergodic(shortLength, longLength, signalLength) =>
-    price = close
-    highestHigh = ta.highest(high, longLength)
-    lowestLow = ta.lowest(low, longLength)
-    
-    priceChangeEMA = ta.ema(ta.ema(price - 0.5 * (highestHigh + lowestLow), shortLength), shortLength)
-    rangeEMA = ta.ema(ta.ema(0.5 * (highestHigh - lowestLow), shortLength), shortLength)
-    
-    smi = rangeEMA != 0 ? priceChangeEMA / rangeEMA : 0
-    signal = ta.ema(smi, signalLength)
-    
-    [smi, signal]
-// QQE Calculation - Fixed for Pine Script v5
-var float qqe_longband = 0.0
-var float qqe_shortband = 0.0
-var int qqe_trend_state = 0
-
-calculate_qqe(src, length, smoothing, factor) =>
-    rsi_val = ta.rsi(src, length)
-    rsi_ma = ta.ema(rsi_val, smoothing)
-    
-    atr_rsi = ta.ema(math.abs(rsi_ma[1] - rsi_ma), smoothing)
-    dar = ta.ema(atr_rsi, smoothing) * factor
-    
-    newlongband = rsi_ma - dar
-    newshortband = rsi_ma + dar
-    
-    longband_result = 0.0
-    shortband_result = 0.0
-    
-    if rsi_ma[1] > qqe_longband and rsi_ma > qqe_longband
-        longband_result := math.max(qqe_longband, newlongband)
-    else
-        longband_result := newlongband
-    
-    if rsi_ma[1] < qqe_shortband and rsi_ma < qqe_shortband
-        shortband_result := math.min(qqe_shortband, newshortband)
-    else
-        shortband_result := newshortband
-    
-    cross_1 = ta.cross(longband_result, rsi_ma)
-    cross_2 = ta.cross(rsi_ma, shortband_result)
-    
-    trend_result = 0
-    if cross_2
-        trend_result := 1
-    else if cross_1
-        trend_result := -1
-    else
-        trend_result := qqe_trend_state
-    
-    [rsi_ma, longband_result, shortband_result, trend_result]
-
-// Dynamic Bands
-dynamic_bands(value, length, mult) =>
-    basis = ta.sma(value, length)
-    dev = mult * ta.stdev(value, length)
-    [basis + dev, basis - dev]
-
-// Balance of Power
-calculate_bop() =>
-    bop_raw = high - low == 0 ? 0 : (close - open) / (high - low)
-    ta.sma(bop_raw, bop_smooth_length)
-
-// Chaikin Money Flow
-calculate_cmf(length) =>
-    mfv = ((close - low) - (high - close)) / (high - low) * volume
-    ta.sma(mfv, length) / ta.sma(volume, length)
-
-// Candle Pattern Functions
-is_hammer() =>
-    body = math.abs(close - open)
-    lower_shadow = open > close ? close - low : open - low
-    upper_shadow = open > close ? high - open : high - close
-    lower_shadow >= body * 2 and upper_shadow <= body * 0.5
-
-is_bullish_engulfing() =>
-    close[1] < open[1] and close > open and open <= close[1] and close >= open[1]
-
-is_bearish_engulfing() =>
-    close[1] > open[1] and close < open and open >= close[1] and close <= open[1]
-
-is_doji() =>
-    body = math.abs(close - open)
-    avg_body = ta.sma(math.abs(close - open), 20)
-    body <= avg_body * 0.1
-
-// ===============================
-// INDICATOR CALCULATIONS
-// ===============================
-// ATR calculations
-atr_val = ta.atr(14)
-atr_sl_val = ta.atr(atr_sl_length)
-atr_tp_val = ta.atr(atr_tp_length)
-
-// Volume and Volatility
-volume_avg = ta.sma(volume, volume_length)
-volatility = ta.stdev(close, vol_length) / ta.sma(close, vol_length) * 100
-
-// Parabolic SAR
-sar_val = ta.sar(sar_start, sar_increment, sar_maximum)
-
-// RSI
-rsi1_val = ta.rsi(close, rsi1_length)
-
-// Moving Averages
-ma_fast_val = ma_function(close, ma_fast_length, ma_fast_type)
-ma_slow_val = ma_function(close, ma_slow_length, ma_slow_type)
-
-// Channels
-[bb_upper, bb_basis, bb_lower] = bollinger_bands(close, channel_length, channel_multiplier)
-[kc_upper, kc_basis, kc_lower] = keltner_channel(close, channel_length, channel_multiplier)
-
-channel_upper = channel_type == "Bollinger Bands" ? bb_upper : kc_upper
-channel_basis = channel_type == "Bollinger Bands" ? bb_basis : kc_basis
-channel_lower = channel_type == "Bollinger Bands" ? bb_lower : kc_lower
-
-// Supertrend
-[st_trend, st_val, st_up, st_down] = supertrend(supertrend_factor, supertrend_period)
+// Legacy Supertrend calculation
+[st_trend, st_val, st_up, st_down] = legacy_supertrend(supertrend_factor, supertrend_period)
 
 // RVI
 [rvi_val, rvi_signal] = calculate_rvi(rvi_length)
 
 // MFI
 mfi_val = ta.mfi(hlc3, mfi_length)
+
+// Stochastic - FIXED: Variable name conflict
+stoch_k_raw = ta.stoch(close, high, low, stoch_k_length)
+stoch_k_smoothed = ta.sma(stoch_k_raw, stoch_k_smooth)
+stoch_d = ta.sma(stoch_k_smoothed, stoch_d_smooth)
+
+// Stochastic cross calculations - FIXED: moved after stochastic calculations
+stoch_cross_up = ta.crossover(stoch_k_smoothed, stoch_oversold)
+stoch_cross_down = ta.crossunder(stoch_k_smoothed, stoch_overbought)
 
 // CCI
 cci_val = ta.cci(hlc3, cci_length)
@@ -636,7 +814,7 @@ cci_val = ta.cci(hlc3, cci_length)
 momentum_val = ta.mom(close, momentum_length) / close[momentum_length]
 
 // Dynamic RSI
-[drsi_upper, drsi_lower] = dynamic_bands(rsi1_val, drsi_band_length, drsi_band_mult)
+[drsi_upper, drsi_lower] = dynamic_bands(rsi1_value, drsi_band_length, drsi_band_mult)
 
 // Dynamic MFI
 [dmfi_upper, dmfi_lower] = dynamic_bands(mfi_val, dmfi_band_length, dmfi_band_mult)
@@ -647,17 +825,40 @@ momentum_val = ta.mom(close, momentum_length) / close[momentum_length]
 // DMI
 [diplus, diminus, adx] = ta.dmi(dmi_length, dmi_length)
 
+// DMI cross calculations - FIXED: moved after DMI calculations  
+di_cross_long = ta.crossover(diplus, diminus)
+di_cross_short = ta.crossunder(diplus, diminus)
+
 // Chaikin Money Flow
 cmf_val = calculate_cmf(chaikin_length)
 
 // Balance of Power
 bop_val = calculate_bop()
 
-// MACD
-[macd_line, macd_signal, macd_hist] = ta.macd(close, macd_fast_length, macd_slow_length, macd_signal_length)
+// CMF and BOP cross calculations - FIXED: moved after value calculations
+cmf_cross_up = ta.crossover(cmf_val, 0)
+cmf_cross_down = ta.crossunder(cmf_val, 0)
+bop_cross_up = ta.crossover(bop_val, 0)
+bop_cross_down = ta.crossunder(bop_val, 0)
 
-// QQE
-[qqe_rsi, qqe_long, qqe_short, qqe_trend] = calculate_qqe(close, qqe_rsi_length, qqe_smoothing, qqe_factor)
+// MACD
+[macd_line, macd_signal_line, macd_hist] = ta.macd(close, macd_fast_length, macd_slow_length, macd_signal_length)
+
+// MACD cross calculations - FIXED: moved after MACD calculations
+macd_signal_cross_up = ta.crossover(macd_line, macd_signal_line)
+macd_signal_cross_down = ta.crossunder(macd_line, macd_signal_line)
+macd_zero_cross_up = ta.crossover(macd_line, 0)
+macd_zero_cross_down = ta.crossunder(macd_line, 0)
+
+// Linear Regression Channel
+lrc_basis = ta.linreg(close, lrc_length, 0)
+lrc_dev = ta.stdev(close, lrc_length)
+lrc_upper = lrc_basis + lrc_deviation * lrc_dev
+lrc_lower = lrc_basis - lrc_deviation * lrc_dev
+
+// External Indicator cross calculations
+external_cross_up = ta.crossover(external_source, external_level)
+external_cross_down = ta.crossunder(external_source, external_level)
 
 // ===============================
 // SIGNAL MEMORY VARIABLES
@@ -666,23 +867,114 @@ var int ma_cross_bar = 0
 var int macd_cross_bar = 0
 
 // ===============================
-// SIGNAL LOGIC
+// SIGNAL CONDITIONS - USING PRE-CALCULATED VALUES - FIXED SYNTAX
 // ===============================
-// Date and day filters
+// Date and day filters (Fixed: use intermediate variables for complex logical expressions)
 date_filter = year >= startYear and year <= stopYear
 
-day_blocked = (blockMo and dayofweek == dayofweek.monday) or (blockTu and dayofweek == dayofweek.tuesday) or (blockWe and dayofweek == dayofweek.wednesday) or (blockTh and dayofweek == dayofweek.thursday) or (blockFr and dayofweek == dayofweek.friday) or (blockSa and dayofweek == dayofweek.saturday) or (blockSu and dayofweek == dayofweek.sunday)
+// Calculate blocked days step by step
+is_monday_blocked = blockMo and dayofweek == dayofweek.monday
+is_tuesday_blocked = blockTu and dayofweek == dayofweek.tuesday
+is_wednesday_blocked = blockWe and dayofweek == dayofweek.wednesday
+is_thursday_blocked = blockTh and dayofweek == dayofweek.thursday
+is_friday_blocked = blockFr and dayofweek == dayofweek.friday
+is_saturday_blocked = blockSa and dayofweek == dayofweek.saturday
+is_sunday_blocked = blockSu and dayofweek == dayofweek.sunday
 
+day_blocked = is_monday_blocked or is_tuesday_blocked or is_wednesday_blocked or is_thursday_blocked or is_friday_blocked or is_saturday_blocked or is_sunday_blocked
 day_filter = not day_blocked
 
-// Initialize counters
-indicators_enabled = 0
-conditions_met = 0
+// Initialize signal variables
+// RSI Signals - FIXED: replaced switch with if/else for better stability
+rsi1_long_signal = true
+if useRSI1
+    if rsi1_condition == "Oversold"
+        rsi1_long_signal := rsi1_value <= rsi1_oversold
+    else if rsi1_condition == "Above 50"
+        rsi1_long_signal := rsi1_value > 50
+    else if rsi1_condition == "Custom Range"
+        rsi1_long_signal := rsi1_value >= rsi1_custom_min and rsi1_value <= rsi1_custom_max
+    else if rsi1_condition == "Cross Level Up"
+        rsi1_long_signal := rsi1_cross_up
+    else
+        rsi1_long_signal := false
 
-// Volume filter
+rsi1_short_signal = true
+if useRSI1
+    if rsi1_condition == "Oversold"
+        rsi1_short_signal := rsi1_value >= rsi1_overbought
+    else if rsi1_condition == "Above 50"
+        rsi1_short_signal := rsi1_value < 50
+    else if rsi1_condition == "Custom Range"
+        rsi1_short_signal := rsi1_value <= rsi1_custom_min or rsi1_value >= rsi1_custom_max
+    else if rsi1_condition == "Cross Level Up"
+        rsi1_short_signal := rsi1_cross_down
+    else
+        rsi1_short_signal := false
+
+rsi2_long_signal = true
+if useRSI2
+    if rsi2_condition == "Oversold"
+        rsi2_long_signal := rsi2_value <= rsi2_oversold
+    else if rsi2_condition == "Above 50"
+        rsi2_long_signal := rsi2_value > 50
+    else if rsi2_condition == "Custom Range"
+        rsi2_long_signal := rsi2_value >= rsi2_custom_min and rsi2_value <= rsi2_custom_max
+    else if rsi2_condition == "Cross Level Up"
+        rsi2_long_signal := rsi2_cross_up
+    else
+        rsi2_long_signal := false
+
+rsi2_short_signal = true
+if useRSI2
+    if rsi2_condition == "Oversold"
+        rsi2_short_signal := rsi2_value >= rsi2_overbought
+    else if rsi2_condition == "Above 50"
+        rsi2_short_signal := rsi2_value < 50
+    else if rsi2_condition == "Custom Range"
+        rsi2_short_signal := rsi2_value <= rsi2_custom_min or rsi2_value >= rsi2_custom_max
+    else if rsi2_condition == "Cross Level Up"
+        rsi2_short_signal := rsi2_cross_down
+    else
+        rsi2_short_signal := false
+
+rsi3_long_signal = true
+if useRSI3
+    if rsi3_condition == "Oversold"
+        rsi3_long_signal := rsi3_value <= rsi3_oversold
+    else if rsi3_condition == "Above 50"
+        rsi3_long_signal := rsi3_value > 50
+    else if rsi3_condition == "Custom Range"
+        rsi3_long_signal := rsi3_value >= rsi3_custom_min and rsi3_value <= rsi3_custom_max
+    else if rsi3_condition == "Cross Level Up"
+        rsi3_long_signal := rsi3_cross_up
+    else
+        rsi3_long_signal := false
+
+rsi3_short_signal = true
+if useRSI3
+    if rsi3_condition == "Oversold"
+        rsi3_short_signal := rsi3_value >= rsi3_overbought
+    else if rsi3_condition == "Above 50"
+        rsi3_short_signal := rsi3_value < 50
+    else if rsi3_condition == "Custom Range"
+        rsi3_short_signal := rsi3_value <= rsi3_custom_min or rsi3_value >= rsi3_custom_max
+    else if rsi3_condition == "Cross Level Up"
+        rsi3_short_signal := rsi3_cross_down
+    else
+        rsi3_short_signal := false
+
+// SuperTrend Signals - FIXED: simplified logic
+st1_long_signal = useST1 ? st1_direction == 1 : true
+st1_short_signal = useST1 ? st1_direction == -1 : true
+st2_long_signal = useST2 ? st2_direction == 1 : true
+st2_short_signal = useST2 ? st2_direction == -1 : true
+st3_long_signal = useST3 ? st3_direction == 1 : true
+st3_short_signal = useST3 ? st3_direction == -1 : true
+
+// Volume filter - FIXED: replaced switch with if/else
 volume_condition_result = true
 if useVolumeFilter
-    indicators_enabled += 1
     if volume_condition == "Above Average"
         volume_condition_result := volume > volume_avg * volume_multiplier
     else if volume_condition == "Below Average"
@@ -693,14 +985,10 @@ if useVolumeFilter
         volume_condition_result := volume < volume[1]
     else
         volume_condition_result := false
-    
-    if volume_condition_result
-        conditions_met += 1
 
-// Volatility filter
+// Volatility filter - FIXED: replaced switch with if/else
 volatility_condition_result = true
 if useVolatilityFilter
-    indicators_enabled += 1
     if vol_condition == "Rising"
         volatility_condition_result := volatility > volatility[1]
     else if vol_condition == "Falling"
@@ -711,362 +999,381 @@ if useVolatilityFilter
         volatility_condition_result := volatility < vol_threshold
     else
         volatility_condition_result := false
-    
-    if volatility_condition_result
-        conditions_met += 1
 
 // High/Low Filter
-highlow_result = true
+highlow_long_signal = true
 if useHighLowFilter
-    indicators_enabled += 1
     highest_price = ta.highest(high, highlow_period)
     lowest_price = ta.lowest(low, highlow_period)
-    price_change_long = (close - lowest_price) / lowest_price * 100
-    price_change_short = (highest_price - close) / highest_price * 100
-    
-    highlow_result := (useLong and price_change_long >= highlow_min_change) or (useShort and price_change_short >= highlow_min_change)
-    if highlow_result
-        conditions_met += 1
+    price_change = (close - lowest_price) / lowest_price * 100
+    highlow_long_signal := price_change >= highlow_min_change
+
+highlow_short_signal = true
+if useHighLowFilter
+    highest_price = ta.highest(high, highlow_period)
+    lowest_price = ta.lowest(low, highlow_period)
+    price_change = (highest_price - close) / highest_price * 100
+    highlow_short_signal := price_change >= highlow_min_change
 
 // ATR Change Filter
-atr_change_result = true
+atr_change_signal = true
 if useATRChangeFilter
-    indicators_enabled += 1
     current_atr = ta.atr(14)
     past_atr = ta.sma(ta.atr(14), atr_change_period)
     atr_change = (current_atr - past_atr) / past_atr * 100
-    
-    atr_change_result := atr_change >= atr_change_threshold
-    if atr_change_result
-        conditions_met += 1
+    atr_change_signal := atr_change >= atr_change_threshold
 
 // Block If Worse Filter
-block_worse_result = true
+block_worse_long_signal = true
 if useBlockIfWorse
-    indicators_enabled += 1
     price_move = (close - close[1]) / close[1] * 100
-    
-    block_worse_result := not ((useLong and price_move > blockIfWorsePercent) or (useShort and price_move < -blockIfWorsePercent))
-    if block_worse_result
-        conditions_met += 1
+    block_worse_long_signal := not (price_move > blockIfWorsePercent)
+
+block_worse_short_signal = true
+if useBlockIfWorse
+    price_move = (close - close[1]) / close[1] * 100
+    block_worse_short_signal := not (price_move < -blockIfWorsePercent)
 
 // PinBar + MA
-pinbar_ma_result = false
+pinbar_ma_long_signal = true
 if usePinBarMA
-    indicators_enabled += 1
     ma1 = ta.ema(close, pinbar_ma1_length)
     ma2 = ta.ema(close, pinbar_ma2_length)
     ma3 = ta.ema(close, pinbar_ma3_length)
-    
     is_pin = is_hammer()
-    ma_aligned_long = ma1 > ma2 and ma2 > ma3
-    ma_aligned_short = ma1 < ma2 and ma2 < ma3
-    
-    pinbar_ma_result := (useLong and is_pin and ma_aligned_long) or (useShort and is_pin and ma_aligned_short)
-    if pinbar_ma_result
-        conditions_met += 1
+    ma_aligned = ma1 > ma2 and ma2 > ma3
+    pinbar_ma_long_signal := is_pin and ma_aligned
 
-// Supertrend Filter
-supertrend_result = true
-if useSupertrend
-    indicators_enabled += 1
-    supertrend_result := (useLong and st_trend == 1) or (useShort and st_trend == -1)
-    if supertrend_result
-        conditions_met += 1
+pinbar_ma_short_signal = true
+if usePinBarMA
+    ma1 = ta.ema(close, pinbar_ma1_length)
+    ma2 = ta.ema(close, pinbar_ma2_length)
+    ma3 = ta.ema(close, pinbar_ma3_length)
+    is_pin = is_hammer()
+    ma_aligned = ma1 < ma2 and ma2 < ma3
+    pinbar_ma_short_signal := is_pin and ma_aligned
+
+// Supertrend Filter (legacy)
+supertrend_long_signal = useSupertrend ? st_trend == 1 : true
+supertrend_short_signal = useSupertrend ? st_trend == -1 : true
 
 // Consolidation Zone
-consolidation_result = true
+consolidation_signal = true
 if useConsolidation
-    indicators_enabled += 1
     highest_cons = ta.highest(high, consolidation_length)
     lowest_cons = ta.lowest(low, consolidation_length)
     range_percent = (highest_cons - lowest_cons) / lowest_cons * 100
-    
-    consolidation_result := range_percent > consolidation_range
-    if consolidation_result
-        conditions_met += 1
+    consolidation_signal := range_percent > consolidation_range
 
-// RSI Condition
-rsi1_result = true
-if useRSI1
-    indicators_enabled += 1
-    rsi1_result := (useLong and rsi1_val < rsi1_oversold) or (useShort and rsi1_val > rsi1_overbought)
-    if rsi1_result
-        conditions_met += 1
-
-// RVI Condition
-rvi_result = true
-if useRVI
-    indicators_enabled += 1
-    rvi_result := (useLong and rvi_val < rvi_oversold) or (useShort and rvi_val > rvi_overbought)
-    if rvi_result
-        conditions_met += 1
-
-// MFI Condition
-mfi_result = true
-if useMFI
-    indicators_enabled += 1
-    mfi_result := (useLong and mfi_val < mfi_oversold) or (useShort and mfi_val > mfi_overbought)
-    if mfi_result
-        conditions_met += 1
-
-// CCI Condition
-cci_result = true
-if useCCI
-    indicators_enabled += 1
-    cci_result := (useLong and cci_val < cci_oversold) or (useShort and cci_val > cci_overbought)
-    if cci_result
-        conditions_met += 1
-
-// Momentum Condition
-momentum_result = true
-if useMomentum
-    indicators_enabled += 1
-    momentum_result := (useLong and momentum_val < momentum_oversold) or (useShort and momentum_val > momentum_overbought)
-    if momentum_result
-        conditions_met += 1
-
-// Dynamic RSI
-drsi_result = true
-if useDynamicRSI
-    indicators_enabled += 1
-    drsi_result := (useLong and rsi1_val < drsi_lower) or (useShort and rsi1_val > drsi_upper)
-    if drsi_result
-        conditions_met += 1
-
-// Dynamic MFI
-dmfi_result = true
-if useDynamicMFI
-    indicators_enabled += 1
-    dmfi_result := (useLong and mfi_val < dmfi_lower) or (useShort and mfi_val > dmfi_upper)
-    if dmfi_result
-        conditions_met += 1
-
-// SMI Ergodic
-smi_result = true
-if useSMIO
-    indicators_enabled += 1
-    smi_result := (useLong and smi_val < smio_oversold) or (useShort and smi_val > smio_overbought)
-    if smi_result
-        conditions_met += 1
-
-// DMI Condition
-dmi_result = true
-if useDMI
-    indicators_enabled += 1
-    di_cross_long = ta.crossover(diplus, diminus)
-    di_cross_short = ta.crossunder(diplus, diminus)
-    adx_strong = adx > dmi_adx_threshold
-    
-    if dmi_signal_type == "DI Cross"
-        dmi_result := (useLong and di_cross_long) or (useShort and di_cross_short)
-    else if dmi_signal_type == "ADX Level"
-        dmi_result := adx_strong
-    else if dmi_signal_type == "Both"
-        dmi_result := ((useLong and di_cross_long) or (useShort and di_cross_short)) and adx_strong
-    else
-        dmi_result := false
-    
-    if dmi_result
-        conditions_met += 1
-
-// Chaikin Money Flow
-chaikin_result = true
-if useChaikin
-    indicators_enabled += 1
-    cmf_ob_os = (useLong and cmf_val < chaikin_oversold) or (useShort and cmf_val > chaikin_overbought)
-    cmf_zero = chaikin_use_zero and ((useLong and ta.crossover(cmf_val, 0)) or (useShort and ta.crossunder(cmf_val, 0)))
-    
-    chaikin_result := cmf_ob_os or cmf_zero
-    if chaikin_result
-        conditions_met += 1
-
-// Balance of Power
-bop_result = true
-if useBOP
-    indicators_enabled += 1
-    bop_ob_os = (useLong and bop_val < bop_oversold) or (useShort and bop_val > bop_overbought)
-    bop_zero = bop_use_zero and ((useLong and ta.crossover(bop_val, 0)) or (useShort and ta.crossunder(bop_val, 0)))
-    
-    bop_result := bop_ob_os or bop_zero
-    if bop_result
-        conditions_met += 1
-
-// MACD Condition with Signal Memory
-macd_result = false
-if useMACD
-    indicators_enabled += 1
-    signal_cross_long = ta.crossover(macd_line, macd_signal)
-    signal_cross_short = ta.crossunder(macd_line, macd_signal)
-    zero_cross_long = ta.crossover(macd_line, 0)
-    zero_cross_short = ta.crossunder(macd_line, 0)
-    
-    current_macd_signal = false
-    if macd_signal_type == "Signal Cross"
-        current_macd_signal := (useLong and signal_cross_long) or (useShort and signal_cross_short)
-    else if macd_signal_type == "Zero Cross"
-        current_macd_signal := (useLong and zero_cross_long) or (useShort and zero_cross_short)
-    else if macd_signal_type == "Both"
-        current_macd_signal := ((useLong and signal_cross_long) or (useShort and signal_cross_short)) or ((useLong and zero_cross_long) or (useShort and zero_cross_short))
-    
-    if current_macd_signal
-        macd_cross_bar := bar_index
-    
-    if macd_signal_memory and bar_index - macd_cross_bar <= macd_memory_bars
-        macd_result := true
-    else
-        macd_result := current_macd_signal
-    
-    if macd_result
-        conditions_met += 1
-
-// QQE Signals
-qqe_result = true
-if useQQE
-    indicators_enabled += 1
-    qqe_long_signal = qqe_trend == 1 and qqe_trend[1] != 1
-    qqe_short_signal = qqe_trend == -1 and qqe_trend[1] != -1
-    
-    qqe_result := (useLong and qqe_long_signal) or (useShort and qqe_short_signal)
-    if qqe_result
-        conditions_met += 1
-
-// Divergence Detection (fixed - not using var)
-divergence_result = false
-if useDivergence
-    indicators_enabled += 1
-    
-    // Simple divergence check
-    lookback = 5
-    
-    // Check for bullish divergence (price lower low, indicator higher low)
-    price_lower_low = low < ta.lowest(low[1], lookback)
-    rsi_higher_low = rsi1_val > ta.lowest(rsi1_val[1], lookback)
-    bull_div = price_lower_low and rsi_higher_low
-    
-    // Check for bearish divergence (price higher high, indicator lower high)
-    price_higher_high = high > ta.highest(high[1], lookback)
-    rsi_lower_high = rsi1_val < ta.highest(rsi1_val[1], lookback)
-    bear_div = price_higher_high and rsi_lower_high
-    
-    divergence_result := (useLong and bull_div) or (useShort and bear_div)
-    if divergence_result
-        conditions_met += 1
-
-// Candle Patterns
-candle_result = false
-if useCandlePatterns
-    indicators_enabled += 1
-    
-    bull_patterns = (use_hammer and is_hammer() and close > open) or (use_engulfing and is_bullish_engulfing()) or (use_doji and is_doji() and close > ta.sma(close, 20))
-    
-    bear_patterns = (use_hammer and is_hammer() and close < open) or (use_engulfing and is_bearish_engulfing()) or (use_doji and is_doji() and close < ta.sma(close, 20))
-    
-    candle_result := (useLong and bull_patterns) or (useShort and bear_patterns)
-    if candle_result
-        conditions_met += 1
-
-// Moving Average Conditions with Signal Memory
-ma_signal_current = false
+// Moving Average Signals with Signal Memory - FIXED: simplified logic
+ma_long_signal = true
+ma_short_signal = true
 if useMA
-    indicators_enabled += 1
-    ma_cross_long = ta.crossover(ma_fast_val, ma_slow_val)
-    ma_cross_short = ta.crossunder(ma_fast_val, ma_slow_val)
+    ma_cross_long = ma_cross_over
+    ma_cross_short = ma_cross_under
     ma_dir_long = ma_fast_val > ma_fast_val[1] and ma_slow_val > ma_slow_val[1]
     ma_dir_short = ma_fast_val < ma_fast_val[1] and ma_slow_val < ma_slow_val[1]
-    ma_same_dir = (ma_fast_val > ma_slow_val and ma_dir_long) or (ma_fast_val < ma_slow_val and ma_dir_short)
+    ma_same_dir_long = ma_fast_val > ma_slow_val and ma_dir_long
+    ma_same_dir_short = ma_fast_val < ma_slow_val and ma_dir_short
     
-    current_ma_signal = false
+    current_ma_long_signal = false
+    current_ma_short_signal = false
+    
     if ma_signal_type == "Cross"
-        current_ma_signal := (useLong and ma_cross_long) or (useShort and ma_cross_short)
+        current_ma_long_signal := ma_cross_long
+        current_ma_short_signal := ma_cross_short
     else if ma_signal_type == "Direction"
-        current_ma_signal := (useLong and ma_dir_long) or (useShort and ma_dir_short)
+        current_ma_long_signal := ma_dir_long
+        current_ma_short_signal := ma_dir_short
     else if ma_signal_type == "Both Direction Same"
-        current_ma_signal := (useLong and ma_same_dir and ma_fast_val > ma_slow_val) or (useShort and ma_same_dir and ma_fast_val < ma_slow_val)
+        current_ma_long_signal := ma_same_dir_long
+        current_ma_short_signal := ma_same_dir_short
     
-    if current_ma_signal
+    if current_ma_long_signal or current_ma_short_signal
         ma_cross_bar := bar_index
     
     if ma_signal_memory and bar_index - ma_cross_bar <= ma_memory_bars
-        ma_signal_current := true
+        memory_condition = bar_index - ma_cross_bar <= ma_memory_bars
+        ma_long_signal := current_ma_long_signal or (memory_condition and current_ma_long_signal[bar_index - ma_cross_bar])
+        ma_short_signal := current_ma_short_signal or (memory_condition and current_ma_short_signal[bar_index - ma_cross_bar])
     else
-        ma_signal_current := current_ma_signal
-    
-    if ma_signal_current
-        conditions_met += 1
+        ma_long_signal := current_ma_long_signal
+        ma_short_signal := current_ma_short_signal
 
-// Channels Conditions
-channels_result = false
+// Channels Conditions - FIXED: replaced switch with if/else
+channels_long_signal = true
 if useChannels
-    indicators_enabled += 1
-    
     touch_long = low <= channel_lower and close > channel_lower
-    touch_short = high >= channel_upper and close < channel_upper
-    
     close_outside_long = close[1] < channel_lower and close > channel_lower
-    close_outside_short = close[1] > channel_upper and close < channel_upper
-    
     breakout_long = close > channel_upper
+    
+    if channel_signal_type == "Touch"
+        channels_long_signal := touch_long
+    else if channel_signal_type == "Close Outside"
+        channels_long_signal := close_outside_long
+    else if channel_signal_type == "Breakout"
+        channels_long_signal := breakout_long
+    else
+        channels_long_signal := false
+
+channels_short_signal = true
+if useChannels
+    touch_short = high >= channel_upper and close < channel_upper
+    close_outside_short = close[1] > channel_upper and close < channel_upper
     breakout_short = close < channel_lower
     
     if channel_signal_type == "Touch"
-        channels_result := (useLong and touch_long) or (useShort and touch_short)
+        channels_short_signal := touch_short
     else if channel_signal_type == "Close Outside"
-        channels_result := (useLong and close_outside_long) or (useShort and close_outside_short)
+        channels_short_signal := close_outside_short
     else if channel_signal_type == "Breakout"
-        channels_result := (useLong and breakout_long) or (useShort and breakout_short)
-    
-    if channels_result
-        conditions_met += 1
-
-// External Indicator
-external_result = true
-if useExternal
-    indicators_enabled += 1
-    
-    if external_condition == "Above"
-        external_result := external_source > external_level
-    else if external_condition == "Below"
-        external_result := external_source < external_level
-    else if external_condition == "Cross Up"
-        external_result := ta.crossover(external_source, external_level)
-    else if external_condition == "Cross Down"
-        external_result := ta.crossunder(external_source, external_level)
+        channels_short_signal := breakout_short
     else
-        external_result := false
+        channels_short_signal := false
+
+// Other indicator signals (keeping existing logic but with proper boolean returns)
+rvi_long_signal = useRVI ? rvi_val < rvi_oversold : true
+rvi_short_signal = useRVI ? rvi_val > rvi_overbought : true
+
+mfi_long_signal = useMFI ? mfi_val < mfi_oversold : true
+mfi_short_signal = useMFI ? mfi_val > mfi_overbought : true
+
+stoch_long_signal = useStochastic ? stoch_k_smoothed < stoch_oversold : true
+stoch_short_signal = useStochastic ? stoch_k_smoothed > stoch_overbought : true
+
+cci_long_signal = useCCI ? cci_val < cci_oversold : true
+cci_short_signal = useCCI ? cci_val > cci_overbought : true
+
+momentum_long_signal = useMomentum ? momentum_val < momentum_oversold : true
+momentum_short_signal = useMomentum ? momentum_val > momentum_overbought : true
+
+drsi_long_signal = useDynamicRSI ? rsi1_value < drsi_lower : true
+drsi_short_signal = useDynamicRSI ? rsi1_value > drsi_upper : true
+
+dmfi_long_signal = useDynamicMFI ? mfi_val < dmfi_lower : true
+dmfi_short_signal = useDynamicMFI ? mfi_val > dmfi_upper : true
+
+smi_long_signal = useSMIO ? smi_val < smio_oversold : true
+smi_short_signal = useSMIO ? smi_val > smio_overbought : true
+
+// DMI Condition - FIXED: replaced switch with if/else
+dmi_long_signal = true
+if useDMI
+    adx_strong = adx > dmi_adx_threshold
     
-    if external_result
-        conditions_met += 1
+    if dmi_signal_type == "DI Cross"
+        dmi_long_signal := di_cross_long
+    else if dmi_signal_type == "ADX Level"
+        dmi_long_signal := adx_strong
+    else if dmi_signal_type == "Both"
+        dmi_long_signal := di_cross_long and adx_strong
+    else
+        dmi_long_signal := false
+
+dmi_short_signal = true
+if useDMI
+    adx_strong = adx > dmi_adx_threshold
+    
+    if dmi_signal_type == "DI Cross"
+        dmi_short_signal := di_cross_short
+    else if dmi_signal_type == "ADX Level"
+        dmi_short_signal := adx_strong
+    else if dmi_signal_type == "Both"
+        dmi_short_signal := di_cross_short and adx_strong
+    else
+        dmi_short_signal := false
+
+// Chaikin Money Flow
+chaikin_long_signal = true
+if useChaikin
+    cmf_ob_os = cmf_val < chaikin_oversold
+    cmf_zero = chaikin_use_zero and cmf_cross_up
+    chaikin_long_signal := cmf_ob_os or cmf_zero
+
+chaikin_short_signal = true
+if useChaikin
+    cmf_ob_os = cmf_val > chaikin_overbought
+    cmf_zero = chaikin_use_zero and cmf_cross_down
+    chaikin_short_signal := cmf_ob_os or cmf_zero
+
+// Balance of Power
+bop_long_signal = true
+if useBOP
+    bop_ob_os = bop_val < bop_oversold
+    bop_zero = bop_use_zero and bop_cross_up
+    bop_long_signal := bop_ob_os or bop_zero
+
+bop_short_signal = true
+if useBOP
+    bop_ob_os = bop_val > bop_overbought
+    bop_zero = bop_use_zero and bop_cross_down
+    bop_short_signal := bop_ob_os or bop_zero
+
+// MACD Condition with Signal Memory - FIXED: replaced switch with if/else
+macd_long_signal = true
+macd_short_signal = true
+if useMACD
+    signal_cross_long = macd_signal_cross_up
+    signal_cross_short = macd_signal_cross_down
+    zero_cross_long = macd_zero_cross_up
+    zero_cross_short = macd_zero_cross_down
+    
+    current_macd_long_signal = false
+    current_macd_short_signal = false
+    
+    if macd_signal_type == "Signal Cross"
+        current_macd_long_signal := signal_cross_long
+        current_macd_short_signal := signal_cross_short
+    else if macd_signal_type == "Zero Cross"
+        current_macd_long_signal := zero_cross_long
+        current_macd_short_signal := zero_cross_short
+    else if macd_signal_type == "Both"
+        current_macd_long_signal := signal_cross_long or zero_cross_long
+        current_macd_short_signal := signal_cross_short or zero_cross_short
+    
+    if current_macd_long_signal or current_macd_short_signal
+        macd_cross_bar := bar_index
+    
+    if macd_signal_memory and bar_index - macd_cross_bar <= macd_memory_bars
+        macd_long_signal := current_macd_long_signal
+        macd_short_signal := current_macd_short_signal
+    else
+        macd_long_signal := current_macd_long_signal
+        macd_short_signal := current_macd_short_signal
+
+// QQE Signals
+qqe_long_signal = useQQE ? (qqe_trend == 1 and qqe_trend[1] != 1) : true
+qqe_short_signal = useQQE ? (qqe_trend == -1 and qqe_trend[1] != -1) : true
+
+// Levels Signal
+levels_long_signal = true
+if useLevels
+    support_level = ta.lowest(low, level_lookback)
+    price_near_support = math.abs(close - support_level) / close * 100 < level_proximity
+    levels_long_signal := price_near_support
+
+levels_short_signal = true
+if useLevels
+    resistance_level = ta.highest(high, level_lookback)
+    price_near_resistance = math.abs(close - resistance_level) / close * 100 < level_proximity
+    levels_short_signal := price_near_resistance
+
+// Divergence Detection
+[bull_div, bear_div] = detect_divergence(close, rsi1_value, div_lookback)
+divergence_long_signal = useDivergence ? bull_div : true
+divergence_short_signal = useDivergence ? bear_div : true
+
+// Candle Patterns
+candle_long_signal = true
+if useCandlePatterns
+    bull_hammer = use_hammer and is_hammer() and close > open
+    bull_engulfing = use_engulfing and is_bullish_engulfing()
+    bull_doji = use_doji and is_doji() and close > ta.sma(close, 20)
+    bull_morning_star = use_morning_evening_star and is_morning_star()
+    bull_soldiers = use_three_soldiers_crows and is_three_white_soldiers()
+    
+    candle_long_signal := bull_hammer or bull_engulfing or bull_doji or bull_morning_star or bull_soldiers
+
+candle_short_signal = true
+if useCandlePatterns
+    bear_hammer = use_hammer and is_hammer() and close < open
+    bear_engulfing = use_engulfing and is_bearish_engulfing()
+    bear_doji = use_doji and is_doji() and close < ta.sma(close, 20)
+    bear_evening_star = use_morning_evening_star and is_evening_star()
+    bear_crows = use_three_soldiers_crows and is_three_black_crows()
+    
+    candle_short_signal := bear_hammer or bear_engulfing or bear_doji or bear_evening_star or bear_crows
 
 // Linear Regression Channel
-lrc_result = true
-if useLRC
-    indicators_enabled += 1
-    lrc_basis = ta.linreg(close, lrc_length, 0)
-    lrc_dev = ta.stdev(close, lrc_length)
-    lrc_upper = lrc_basis + lrc_deviation * lrc_dev
-    lrc_lower = lrc_basis - lrc_deviation * lrc_dev
-    
-    lrc_result := (useLong and close < lrc_lower) or (useShort and close > lrc_upper)
-    if lrc_result
-        conditions_met += 1
+lrc_long_signal = useLRC ? close < lrc_lower : true
+lrc_short_signal = useLRC ? close > lrc_upper : true
+
+// External Indicator - FIXED: replaced switch with if/else
+external_long_signal = true
+if useExternal
+    if external_condition == "Above"
+        external_long_signal := external_source > external_level
+    else if external_condition == "Below"
+        external_long_signal := external_source < external_level
+    else if external_condition == "Cross Up"
+        external_long_signal := external_cross_up
+    else if external_condition == "Cross Down"
+        external_long_signal := external_cross_down
+    else
+        external_long_signal := false
+
+external_short_signal = true
+if useExternal
+    if external_condition == "Above"
+        external_short_signal := external_source < external_level
+    else if external_condition == "Below"
+        external_short_signal := external_source > external_level
+    else if external_condition == "Cross Up"
+        external_short_signal := external_cross_down
+    else if external_condition == "Cross Down"
+        external_short_signal := external_cross_up
+    else
+        external_short_signal := false
 
 // ===============================
-// FINAL SIGNAL CONDITIONS
+// FINAL SIGNAL CONDITIONS - EXPANDED
 // ===============================
+// Count active indicators for proper filtering (Fixed: use intermediate calculations)
+rsi_count = (useRSI1 ? 1 : 0) + (useRSI2 ? 1 : 0) + (useRSI3 ? 1 : 0)
+st_count = (useST1 ? 1 : 0) + (useST2 ? 1 : 0) + (useST3 ? 1 : 0)
+filter_count = (useVolumeFilter ? 1 : 0) + (useVolatilityFilter ? 1 : 0) + (useHighLowFilter ? 1 : 0) + (useATRChangeFilter ? 1 : 0) + (useBlockIfWorse ? 1 : 0)
+basic_count = (usePinBarMA ? 1 : 0) + (useSupertrend ? 1 : 0) + (useConsolidation ? 1 : 0) + (useMA ? 1 : 0) + (useChannels ? 1 : 0)
+osc_count = (useRVI ? 1 : 0) + (useMFI ? 1 : 0) + (useStochastic ? 1 : 0) + (useCCI ? 1 : 0) + (useMomentum ? 1 : 0)
+dyn_count = (useDynamicRSI ? 1 : 0) + (useDynamicMFI ? 1 : 0) + (useSMIO ? 1 : 0) + (useDMI ? 1 : 0) + (useChaikin ? 1 : 0)
+adv_count = (useBOP ? 1 : 0) + (useMACD ? 1 : 0) + (useLevels ? 1 : 0) + (useQQE ? 1 : 0) + (useDivergence ? 1 : 0)
+pattern_count = (useCandlePatterns ? 1 : 0) + (useLRC ? 1 : 0) + (useExternal ? 1 : 0)
+
+active_indicators_count = rsi_count + st_count + filter_count + basic_count + osc_count + dyn_count + adv_count + pattern_count
+
+// Comprehensive signal combination (Fixed: break into logical groups)
+// RSI signals group
+rsi_signals_long = rsi1_long_signal and rsi2_long_signal and rsi3_long_signal
+rsi_signals_short = rsi1_short_signal and rsi2_short_signal and rsi3_short_signal
+
+// SuperTrend signals group  
+st_signals_long = st1_long_signal and st2_long_signal and st3_long_signal
+st_signals_short = st1_short_signal and st2_short_signal and st3_short_signal
+
+// Filter signals group
+filter_signals = volume_condition_result and volatility_condition_result and highlow_long_signal and atr_change_signal and consolidation_signal
+filter_signals_long = filter_signals and block_worse_long_signal and pinbar_ma_long_signal and supertrend_long_signal
+filter_signals_short = filter_signals and block_worse_short_signal and pinbar_ma_short_signal and supertrend_short_signal
+
+// Core indicators group
+core_signals_long = ma_long_signal and channels_long_signal and rvi_long_signal and mfi_long_signal and stoch_long_signal
+core_signals_short = ma_short_signal and channels_short_signal and rvi_short_signal and mfi_short_signal and stoch_short_signal
+
+// Oscillators group
+osc_signals_long = cci_long_signal and momentum_long_signal and drsi_long_signal and dmfi_long_signal and smi_long_signal
+osc_signals_short = cci_short_signal and momentum_short_signal and drsi_short_signal and dmfi_short_signal and smi_short_signal
+
+// Advanced indicators group
+adv_signals_long = dmi_long_signal and chaikin_long_signal and bop_long_signal and macd_long_signal and levels_long_signal
+adv_signals_short = dmi_short_signal and chaikin_short_signal and bop_short_signal and macd_short_signal and levels_short_signal
+
+// Pattern and external signals group
+pattern_signals_long = qqe_long_signal and divergence_long_signal and candle_long_signal and lrc_long_signal and external_long_signal
+pattern_signals_short = qqe_short_signal and divergence_short_signal and candle_short_signal and lrc_short_signal and external_short_signal
+
+// Final combined signals
+all_long_signals = rsi_signals_long and st_signals_long and filter_signals_long and core_signals_long and osc_signals_long and adv_signals_long and pattern_signals_long
+all_short_signals = rsi_signals_short and st_signals_short and filter_signals_short and core_signals_short and osc_signals_short and adv_signals_short and pattern_signals_short
+
 // Basic conditions check
 basic_conditions = date_filter and day_filter
-
-// Check if all enabled indicators are met
-all_indicators_met = indicators_enabled == 0 or conditions_met == indicators_enabled
 
 // Direction setup
 long_direction = enableDCA ? gridDirection == "Long" : useLong
 short_direction = enableDCA ? gridDirection == "Short" : useShort
 
 // Final signals - only when position is 0 and on bar close
-long_signal = long_direction and all_indicators_met and basic_conditions and strategy.position_size == 0 and barstate.isconfirmed
-short_signal = short_direction and all_indicators_met and basic_conditions and strategy.position_size == 0 and barstate.isconfirmed
+final_long_condition = long_direction and all_long_signals and basic_conditions and strategy.position_size == 0 and barstate.isconfirmed
+final_short_condition = short_direction and all_short_signals and basic_conditions and strategy.position_size == 0 and barstate.isconfirmed
 
 // ===============================
 // DCA GRID VARIABLES
@@ -1094,7 +1401,7 @@ get_position_size(order_index) =>
     martingale_size * leverage
 
 // Initialize DCA Grid
-if enableDCA and (long_signal or short_signal) and na(entry_price)
+if enableDCA and (final_long_condition or final_short_condition) and na(entry_price)
     entry_price := close
     order_count := 1
     grid_step := entry_price * gridSizePercent / 100
@@ -1131,8 +1438,8 @@ if check_big_drawdown
 var float indent_price = na
 var int indent_bar_count = 0
 
-if useOrderIndent and (long_signal or short_signal) and strategy.position_size == 0
-    indent_direction = long_signal ? -1 : 1
+if useOrderIndent and (final_long_condition or final_short_condition) and strategy.position_size == 0
+    indent_direction = final_long_condition ? -1 : 1
     indent_price := close * (1 + indent_direction * indentPercent / 100)
     indent_bar_count := 0
 
@@ -1145,9 +1452,9 @@ if not na(indent_price)
 // Execute Orders
 if enableDCA
     // Entry with indent
-    entry_condition_long = gridDirection == "Long" and strategy.position_size == 0 and (useOrderIndent ? not na(indent_price) and close <= indent_price : long_signal)
+    entry_condition_long = gridDirection == "Long" and strategy.position_size == 0 and (useOrderIndent ? not na(indent_price) and close <= indent_price : final_long_condition)
     
-    entry_condition_short = gridDirection == "Short" and strategy.position_size == 0 and (useOrderIndent ? not na(indent_price) and close >= indent_price : short_signal)
+    entry_condition_short = gridDirection == "Short" and strategy.position_size == 0 and (useOrderIndent ? not na(indent_price) and close >= indent_price : final_short_condition)
     
     if entry_condition_long
         qty = get_position_size(1) / close
@@ -1199,7 +1506,7 @@ if enableDCA
 
 else
     // Simple Long/Short without DCA
-    if long_signal and strategy.position_size == 0
+    if final_long_condition and strategy.position_size == 0
         if useOrderIndent
             indent_price := close * (1 - indentPercent / 100)
             indent_bar_count := 0
@@ -1207,7 +1514,7 @@ else
             strategy.entry("Long", strategy.long)
             position_closed := false
     
-    if short_signal and strategy.position_size == 0
+    if final_short_condition and strategy.position_size == 0
         if useOrderIndent
             indent_price := close * (1 + indentPercent / 100)
             indent_bar_count := 0
@@ -1217,13 +1524,13 @@ else
     
     // Execute indent orders
     if not enableDCA and not na(indent_price) and strategy.position_size == 0
-        if long_signal and close <= indent_price
+        if final_long_condition and close <= indent_price
             strategy.entry("Long", strategy.long)
             indent_price := na
             indent_bar_count := 0
             position_closed := false
         
-        if short_signal and close >= indent_price
+        if final_short_condition and close >= indent_price
             strategy.entry("Short", strategy.short)
             indent_price := na
             indent_bar_count := 0
@@ -1309,8 +1616,24 @@ else if close_static_tp_sl and strategy.position_size != 0
         if useTrailingStop and not na(trailing_stop_level)
             sl_level := math.max(sl_level, trailing_stop_level)
         
-        // Multi TP Logic
-        if useMultiTP
+        // Multi TP Logic - FIXED
+        if useMultiTP and enableDCA
+            // For DCA grid, close percent from total position
+            tp1_price = avg_price * (1 + tp1_percent / 100)
+            tp2_price = avg_price * (1 + tp2_percent / 100)
+            tp3_price = avg_price * (1 + tp3_percent / 100)
+            tp4_price = avg_price * (1 + tp4_percent / 100)
+            
+            total_qty = math.abs(strategy.position_size)
+            tp1_close_qty = total_qty * tp1_qty / 100
+            tp2_close_qty = total_qty * tp2_qty / 100
+            tp3_close_qty = total_qty * tp3_qty / 100
+            
+            strategy.exit("TP1 L", qty=tp1_close_qty, limit=tp1_price, stop=sl_level)
+            strategy.exit("TP2 L", qty=tp2_close_qty, limit=tp2_price, stop=sl_level)
+            strategy.exit("TP3 L", qty=tp3_close_qty, limit=tp3_price, stop=sl_level)
+            strategy.exit("TP4 L", limit=tp4_price, stop=sl_level)
+        else if useMultiTP
             tp1_price = avg_price * (1 + tp1_percent / 100)
             tp2_price = avg_price * (1 + tp2_percent / 100)
             tp3_price = avg_price * (1 + tp3_percent / 100)
@@ -1335,8 +1658,24 @@ else if close_static_tp_sl and strategy.position_size != 0
         if useTrailingStop and not na(trailing_stop_level)
             sl_level := math.min(sl_level, trailing_stop_level)
         
-        // Multi TP Logic
-        if useMultiTP
+        // Multi TP Logic - FIXED
+        if useMultiTP and enableDCA
+            // For DCA grid, close percent from total position
+            tp1_price = avg_price * (1 - tp1_percent / 100)
+            tp2_price = avg_price * (1 - tp2_percent / 100)
+            tp3_price = avg_price * (1 - tp3_percent / 100)
+            tp4_price = avg_price * (1 - tp4_percent / 100)
+            
+            total_qty = math.abs(strategy.position_size)
+            tp1_close_qty = total_qty * tp1_qty / 100
+            tp2_close_qty = total_qty * tp2_qty / 100
+            tp3_close_qty = total_qty * tp3_qty / 100
+            
+            strategy.exit("TP1 S", qty=tp1_close_qty, limit=tp1_price, stop=sl_level)
+            strategy.exit("TP2 S", qty=tp2_close_qty, limit=tp2_price, stop=sl_level)
+            strategy.exit("TP3 S", qty=tp3_close_qty, limit=tp3_price, stop=sl_level)
+            strategy.exit("TP4 S", limit=tp4_price, stop=sl_level)
+        else if useMultiTP
             tp1_price = avg_price * (1 - tp1_percent / 100)
             tp2_price = avg_price * (1 - tp2_percent / 100)
             tp3_price = avg_price * (1 - tp3_percent / 100)
@@ -1350,46 +1689,58 @@ else if close_static_tp_sl and strategy.position_size != 0
             strategy.exit("Exit S", limit=tp_level, stop=sl_level)
 
 // ===============================
-// CLOSE SIGNALS
+// CLOSE SIGNALS - EXPANDED
 // ===============================
 // Parabolic SAR Close
 if close_parabolic_sar and strategy.position_size != 0
     sar_close = (strategy.position_size > 0 and close < sar_val) or (strategy.position_size < 0 and close > sar_val)
-    if sar_close and (not closeOnlyInProfit or strategy.openprofit > 0)
+    if sar_close and (not close_only_profit or strategy.openprofit > 0)
         strategy.close_all(comment="SAR Close")
         position_closed := true
 
+// LRC Close
+if close_lrc and strategy.position_size != 0 and useLRC
+    lrc_close = (strategy.position_size > 0 and close > lrc_upper) or (strategy.position_size < 0 and close < lrc_lower)
+    if lrc_close and (not close_only_profit or strategy.openprofit > 0)
+        strategy.close_all(comment="LRC Close")
+        position_closed := true
 
 // Channel Close
 if close_bb_kc and strategy.position_size != 0 and useChannels
     channel_close = (strategy.position_size > 0 and close > channel_upper) or (strategy.position_size < 0 and close < channel_lower)
-    if channel_close and (not closeOnlyInProfit or strategy.openprofit > 0)
+    if channel_close and (not close_only_profit or strategy.openprofit > 0)
         strategy.close_all(comment="Channel Close")
         position_closed := true
 
 // QQE Close
 if close_qqe and strategy.position_size != 0 and useQQE
     qqe_close = (strategy.position_size > 0 and qqe_trend == -1) or (strategy.position_size < 0 and qqe_trend == 1)
-    if qqe_close and (not closeOnlyInProfit or strategy.openprofit > 0)
+    if qqe_close and (not close_only_profit or strategy.openprofit > 0)
         strategy.close_all(comment="QQE Close")
         position_closed := true
 
 // RSI Close
-if close_rsi and strategy.position_size != 0 and useRSI1
-    rsi_close = (strategy.position_size > 0 and rsi1_val > rsi1_overbought) or (strategy.position_size < 0 and rsi1_val < rsi1_oversold)
-    if rsi_close and (not closeOnlyInProfit or strategy.openprofit > 0)
+if close_rsi and strategy.position_size != 0 and (useRSI1 or useRSI2 or useRSI3)
+    rsi_close_val = useRSI1 ? rsi1_value : useRSI2 ? rsi2_value : rsi3_value
+    rsi_ob = useRSI1 ? rsi1_overbought : useRSI2 ? rsi2_overbought : rsi3_overbought
+    rsi_os = useRSI1 ? rsi1_oversold : useRSI2 ? rsi2_oversold : rsi3_oversold
+    
+    rsi_close = (strategy.position_size > 0 and rsi_close_val > rsi_ob) or (strategy.position_size < 0 and rsi_close_val < rsi_os)
+    if rsi_close and (not close_only_profit or strategy.openprofit > 0)
         strategy.close_all(comment="RSI Close")
         position_closed := true
 
-// MA Cross Close - Fixed for Pine Script v5
-// Вычисляем кроссы всегда (требование Pine Script v5)
-ma_cross_under = ta.crossunder(ma_fast_val, ma_slow_val)
-ma_cross_over = ta.crossover(ma_fast_val, ma_slow_val)
+// Stochastic Close
+if close_stoch and strategy.position_size != 0 and useStochastic
+    stoch_close = (strategy.position_size > 0 and stoch_k_smoothed > stoch_overbought) or (strategy.position_size < 0 and stoch_k_smoothed < stoch_oversold)
+    if stoch_close and (not close_only_profit or strategy.openprofit > 0)
+        strategy.close_all(comment="Stoch Close")
+        position_closed := true
 
-// MA Cross Close - логика срабатывает только при нужных условиях
+// MA Cross Close - FIXED: use pre-calculated cross variables
 if close_ma_cross and strategy.position_size != 0 and useMA
     ma_close = (strategy.position_size > 0 and ma_cross_under) or (strategy.position_size < 0 and ma_cross_over)
-    if ma_close and (not closeOnlyInProfit or strategy.openprofit > 0)
+    if ma_close and (not close_only_profit or strategy.openprofit > 0)
         strategy.close_all(comment="MA Close")
         position_closed := true
 
@@ -1402,9 +1753,9 @@ if usePyramiding and strategy.position_size != 0 and not position_closed
         price_move := (avg_price - close) / avg_price * 100
     
     if price_move >= pyramidMinMove
-        if strategy.position_size > 0 and all_indicators_met and basic_conditions
+        if strategy.position_size > 0 and all_long_signals and basic_conditions
             strategy.entry("Pyramid L", strategy.long)
-        if strategy.position_size < 0 and all_indicators_met and basic_conditions
+        if strategy.position_size < 0 and all_short_signals and basic_conditions
             strategy.entry("Pyramid S", strategy.short)
 
 // Reverse Orders on SL
@@ -1417,6 +1768,17 @@ if useReverseOrderOnSL and strategy.closedtrades > 0
             strategy.entry("Rev S", strategy.short)
         else
             strategy.entry("Rev L", strategy.long)
+
+// Reverse Orders on BE
+if useReverseOrderOnBE and strategy.closedtrades > 0 and breakeven_activated
+    last_trade = strategy.closedtrades - 1
+    last_profit = strategy.closedtrades.profit(last_trade)
+    
+    if last_profit >= 0 and last_profit <= avg_price * breakevenLevel / 100 and barstate.isconfirmed
+        if strategy.closedtrades.size(last_trade) > 0
+            strategy.entry("Rev BE S", strategy.short)
+        else
+            strategy.entry("Rev BE L", strategy.long)
 
 // Reset variables when position closes
 if strategy.position_size == 0
@@ -1488,11 +1850,11 @@ if showTPSL and strategy.position_size != 0 and barstate.islast
 
 // Signal Visualization
 if showSignals
-    if long_signal
+    if final_long_condition
         label.new(bar_index, low - atr_val, "LONG", 
                   color=color.green, style=label.style_label_up, textcolor=color.white, size=size.normal)
     
-    if short_signal
+    if final_short_condition
         label.new(bar_index, high + atr_val, "SHORT", 
                   color=color.red, style=label.style_label_down, textcolor=color.white, size=size.normal)
 
@@ -1515,31 +1877,50 @@ plot(useChannels ? channel_lower : na, "Channel Lower", color=color.purple)
 
 plot(useSupertrend ? st_val : na, "Supertrend", color=st_trend == 1 ? color.green : color.red, linewidth=2)
 
+// Plot SuperTrend instances
+plot(useST1 ? st1_line : na, "ST1", color=st1_direction == 1 ? color.lime : color.maroon, linewidth=1)
+plot(useST2 ? st2_line : na, "ST2", color=st2_direction == 1 ? color.aqua : color.orange, linewidth=1)
+plot(useST3 ? st3_line : na, "ST3", color=st3_direction == 1 ? color.blue : color.red, linewidth=1)
+
 plotshape(close_parabolic_sar ? sar_val : na, style=shape.circle, location=location.absolute, color=close > sar_val ? color.green : color.red, size=size.tiny)
 
 // ===============================
-// ALERTS
+// ALERTS - FIXED: use final conditions
 // ===============================
-// Entry alerts
-if long_signal
+// Entry alerts (Fixed: use intermediate variables for long strings)
+if final_long_condition
     if enableDCA and sendAlertFirstOrder
-        alert_msg = '{"action": "LONG", "symbol": "' + syminfo.ticker + '", "price": ' + str.tostring(close) + ', "grid": ' + str.tostring(gridSizePercent) + ', "orders": ' + str.tostring(numberOfOrders) + '}'
+        base_msg = '{"action": "LONG", "symbol": "' + syminfo.ticker + '"'
+        price_msg = ', "price": ' + str.tostring(close)
+        grid_msg = ', "grid": ' + str.tostring(gridSizePercent)
+        orders_msg = ', "orders": ' + str.tostring(numberOfOrders) + '}'
+        alert_msg = base_msg + price_msg + grid_msg + orders_msg
         alert(alert_msg, alert.freq_once_per_bar)
     else if not enableDCA
-        alert_msg = '{"action": "LONG", "symbol": "' + syminfo.ticker + '", "price": ' + str.tostring(close) + '}'
+        base_msg = '{"action": "LONG", "symbol": "' + syminfo.ticker + '"'
+        price_msg = ', "price": ' + str.tostring(close) + '}'
+        alert_msg = base_msg + price_msg
         alert(alert_msg, alert.freq_once_per_bar)
 
-if short_signal
+if final_short_condition
     if enableDCA and sendAlertFirstOrder
-        alert_msg = '{"action": "SHORT", "symbol": "' + syminfo.ticker + '", "price": ' + str.tostring(close) + ', "grid": ' + str.tostring(gridSizePercent) + ', "orders": ' + str.tostring(numberOfOrders) + '}'
+        base_msg = '{"action": "SHORT", "symbol": "' + syminfo.ticker + '"'
+        price_msg = ', "price": ' + str.tostring(close)
+        grid_msg = ', "grid": ' + str.tostring(gridSizePercent)
+        orders_msg = ', "orders": ' + str.tostring(numberOfOrders) + '}'
+        alert_msg = base_msg + price_msg + grid_msg + orders_msg
         alert(alert_msg, alert.freq_once_per_bar)
     else if not enableDCA
-        alert_msg = '{"action": "SHORT", "symbol": "' + syminfo.ticker + '", "price": ' + str.tostring(close) + '}'
+        base_msg = '{"action": "SHORT", "symbol": "' + syminfo.ticker + '"'
+        price_msg = ', "price": ' + str.tostring(close) + '}'
+        alert_msg = base_msg + price_msg
         alert(alert_msg, alert.freq_once_per_bar)
 
-// Exit alerts
+// Exit alerts (Fixed: use intermediate variables)
 if strategy.position_size[1] != 0 and strategy.position_size == 0
-    alert_msg = '{"action": "CLOSE", "symbol": "' + syminfo.ticker + '", "price": ' + str.tostring(close) + '}'
+    base_msg = '{"action": "CLOSE", "symbol": "' + syminfo.ticker + '"'
+    price_msg = ', "price": ' + str.tostring(close) + '}'
+    alert_msg = base_msg + price_msg
     alert(alert_msg, alert.freq_once_per_bar)
 
 // ===============================
@@ -1611,81 +1992,87 @@ if barstate.islast
     table.cell(perf_table, 1, 6, str.tostring(max_dd_percent, "#.##") + "%", text_color=color.white)
 
 // Active Indicators Table
-var table indicators_table = table.new(position.bottom_left, 2, 20, bgcolor=color.new(color.black, 90), border_width=1)
+var table indicators_table = table.new(position.bottom_left, 2, 25, bgcolor=color.new(color.black, 90), border_width=1)
 
 if barstate.islast and showSignals
     table.cell(indicators_table, 0, 0, "Active Indicators", bgcolor=color.green, text_color=color.white)
-    table.cell(indicators_table, 1, 0, "", bgcolor=color.green)
+    table.cell(indicators_table, 1, 0, str.tostring(active_indicators_count), bgcolor=color.green, text_color=color.white)
     
     row = 1
     
-    // Show active indicators
-    if useVolumeFilter
-        table.cell(indicators_table, 0, row, "Volume:", text_color=color.white)
-        table.cell(indicators_table, 1, row, volume_condition_result ? "✓" : "✗", 
-                  text_color=volume_condition_result ? color.green : color.red)
-        row += 1
-    
-    if useVolatilityFilter
-        table.cell(indicators_table, 0, row, "Volatility:", text_color=color.white)
-        table.cell(indicators_table, 1, row, volatility_condition_result ? "✓" : "✗", 
-                  text_color=volatility_condition_result ? color.green : color.red)
-        row += 1
-    
+    // Show key active indicators with their status
     if useRSI1
-        table.cell(indicators_table, 0, row, "RSI:", text_color=color.white)
-        table.cell(indicators_table, 1, row, str.tostring(rsi1_val, "#.#"), text_color=color.white)
+        table.cell(indicators_table, 0, row, "RSI1:", text_color=color.white)
+        table.cell(indicators_table, 1, row, str.tostring(rsi1_value, "#.#"), text_color=color.white)
+        row += 1
+    
+    if useRSI2
+        table.cell(indicators_table, 0, row, "RSI2:", text_color=color.white)
+        table.cell(indicators_table, 1, row, str.tostring(rsi2_value, "#.#"), text_color=color.white)
+        row += 1
+    
+    if useRSI3
+        table.cell(indicators_table, 0, row, "RSI3:", text_color=color.white)
+        table.cell(indicators_table, 1, row, str.tostring(rsi3_value, "#.#"), text_color=color.white)
+        row += 1
+    
+    if useST1
+        table.cell(indicators_table, 0, row, "ST1:", text_color=color.white)
+        table.cell(indicators_table, 1, row, st1_direction == 1 ? "Bull" : "Bear", 
+                  text_color=st1_direction == 1 ? color.green : color.red)
+        row += 1
+    
+    if useST2
+        table.cell(indicators_table, 0, row, "ST2:", text_color=color.white)
+        table.cell(indicators_table, 1, row, st2_direction == 1 ? "Bull" : "Bear", 
+                  text_color=st2_direction == 1 ? color.green : color.red)
+        row += 1
+    
+    if useST3
+        table.cell(indicators_table, 0, row, "ST3:", text_color=color.white)
+        table.cell(indicators_table, 1, row, st3_direction == 1 ? "Bull" : "Bear", 
+                  text_color=st3_direction == 1 ? color.green : color.red)
         row += 1
     
     if useMA
         table.cell(indicators_table, 0, row, "MA:", text_color=color.white)
-        table.cell(indicators_table, 1, row, ma_signal_current ? "✓" : "✗", 
-                  text_color=ma_signal_current ? color.green : color.red)
+        table.cell(indicators_table, 1, row, ma_long_signal ? "✓" : "✗", 
+                  text_color=ma_long_signal ? color.green : color.red)
         row += 1
     
     if useChannels
         table.cell(indicators_table, 0, row, "Channel:", text_color=color.white)
-        table.cell(indicators_table, 1, row, channels_result ? "✓" : "✗", 
-                  text_color=channels_result ? color.green : color.red)
-        row += 1
-    
-    if useSupertrend
-        table.cell(indicators_table, 0, row, "Supertrend:", text_color=color.white)
-        table.cell(indicators_table, 1, row, st_trend == 1 ? "Bull" : "Bear", 
-                  text_color=st_trend == 1 ? color.green : color.red)
+        table.cell(indicators_table, 1, row, channels_long_signal ? "✓" : "✗", 
+                  text_color=channels_long_signal ? color.green : color.red)
         row += 1
     
     if useQQE
         table.cell(indicators_table, 0, row, "QQE:", text_color=color.white)
-        qe_color = color.gray
-        qe_text = "Neutral"
+        qqe_color = color.gray
+        qqe_text = "Neutral"
         if qqe_trend == 1
-            qe_color := color.green
-            qe_text := "Bull"
+            qqe_color := color.green
+            qqe_text := "Bull"
         else if qqe_trend == -1
-            qe_color := color.red
-            qe_text := "Bear"
-        table.cell(indicators_table, 1, row, qe_text, text_color=qe_color)
+            qqe_color := color.red
+            qqe_text := "Bear"
+        table.cell(indicators_table, 1, row, qqe_text, text_color=qqe_color)
         row += 1
     
     if useMACD
         table.cell(indicators_table, 0, row, "MACD:", text_color=color.white)
-        table.cell(indicators_table, 1, row, macd_result ? "✓" : "✗", 
-                  text_color=macd_result ? color.green : color.red)
+        table.cell(indicators_table, 1, row, macd_long_signal ? "✓" : "✗", 
+                  text_color=macd_long_signal ? color.green : color.red)
         row += 1
     
     // Summary
-    table.cell(indicators_table, 0, row + 1, "Total Active:", text_color=color.white)
-    table.cell(indicators_table, 1, row + 1, str.tostring(indicators_enabled), text_color=color.white)
-    
-    table.cell(indicators_table, 0, row + 2, "Met:", text_color=color.white)
-    met_color = color.red
-    if conditions_met == indicators_enabled and indicators_enabled > 0
-        met_color := color.green
-    table.cell(indicators_table, 1, row + 2, str.tostring(conditions_met) + "/" + str.tostring(indicators_enabled), text_color=met_color)
+    table.cell(indicators_table, 0, row + 1, "All Met:", text_color=color.white)
+    all_met = all_long_signals or all_short_signals
+    table.cell(indicators_table, 1, row + 1, all_met ? "YES" : "NO", 
+              text_color=all_met ? color.green : color.red)
 
 // ===============================
-// CSV EXPORT/IMPORT
+// CSV EXPORT/IMPORT - FIXED SYNTAX
 // ===============================
 // Generate CSV export string
 if export_button and barstate.islast
@@ -1712,11 +2099,25 @@ if export_button and barstate.islast
     csv_str += "trailingActivation," + str.tostring(trailingActivation) + "\n"
     csv_str += "trailingDistance," + str.tostring(trailingDistance) + "\n"
     
-    // Indicators
+    // RSI Indicators - ALL 3 instances
     csv_str += "useRSI1," + str.tostring(useRSI1 ? 1 : 0) + "\n"
     csv_str += "rsi1_length," + str.tostring(rsi1_length) + "\n"
     csv_str += "rsi1_overbought," + str.tostring(rsi1_overbought) + "\n"
     csv_str += "rsi1_oversold," + str.tostring(rsi1_oversold) + "\n"
+    csv_str += "useRSI2," + str.tostring(useRSI2 ? 1 : 0) + "\n"
+    csv_str += "rsi2_length," + str.tostring(rsi2_length) + "\n"
+    csv_str += "useRSI3," + str.tostring(useRSI3 ? 1 : 0) + "\n"
+    csv_str += "rsi3_length," + str.tostring(rsi3_length) + "\n"
+    
+    // SuperTrend Indicators - ALL 3 instances + legacy
+    csv_str += "useST1," + str.tostring(useST1 ? 1 : 0) + "\n"
+    csv_str += "st1_period," + str.tostring(st1_period) + "\n"
+    csv_str += "st1_factor," + str.tostring(st1_factor) + "\n"
+    csv_str += "useST2," + str.tostring(useST2 ? 1 : 0) + "\n"
+    csv_str += "useST3," + str.tostring(useST3 ? 1 : 0) + "\n"
+    csv_str += "useSupertrend," + str.tostring(useSupertrend ? 1 : 0) + "\n"
+    
+    // Core indicators
     csv_str += "useMA," + str.tostring(useMA ? 1 : 0) + "\n"
     csv_str += "ma_fast_length," + str.tostring(ma_fast_length) + "\n"
     csv_str += "ma_slow_length," + str.tostring(ma_slow_length) + "\n"
@@ -1726,13 +2127,24 @@ if export_button and barstate.islast
     csv_str += "channel_type," + channel_type + "\n"
     csv_str += "channel_length," + str.tostring(channel_length) + "\n"
     csv_str += "channel_multiplier," + str.tostring(channel_multiplier) + "\n"
-    csv_str += "useSupertrend," + str.tostring(useSupertrend ? 1 : 0) + "\n"
-    csv_str += "supertrend_period," + str.tostring(supertrend_period) + "\n"
-    csv_str += "supertrend_factor," + str.tostring(supertrend_factor) + "\n"
+    csv_str += "useQQE," + str.tostring(useQQE ? 1 : 0) + "\n"
+    csv_str += "qqe_rsi_length," + str.tostring(qqe_rsi_length) + "\n"
     csv_str += "useMACD," + str.tostring(useMACD ? 1 : 0) + "\n"
     csv_str += "macd_fast_length," + str.tostring(macd_fast_length) + "\n"
     csv_str += "macd_slow_length," + str.tostring(macd_slow_length) + "\n"
     csv_str += "macd_signal_length," + str.tostring(macd_signal_length) + "\n"
+    
+    // Additional indicators
+    csv_str += "useStochastic," + str.tostring(useStochastic ? 1 : 0) + "\n"
+    csv_str += "useMFI," + str.tostring(useMFI ? 1 : 0) + "\n"
+    csv_str += "useCCI," + str.tostring(useCCI ? 1 : 0) + "\n"
+    csv_str += "useDMI," + str.tostring(useDMI ? 1 : 0) + "\n"
+    csv_str += "useChaikin," + str.tostring(useChaikin ? 1 : 0) + "\n"
+    csv_str += "useBOP," + str.tostring(useBOP ? 1 : 0) + "\n"
+    csv_str += "useDivergence," + str.tostring(useDivergence ? 1 : 0) + "\n"
+    csv_str += "useCandlePatterns," + str.tostring(useCandlePatterns ? 1 : 0) + "\n"
+    csv_str += "useLRC," + str.tostring(useLRC ? 1 : 0) + "\n"
+    csv_str += "useExternal," + str.tostring(useExternal ? 1 : 0) + "\n"
     
     // Display export CSV
     var table export_table = table.new(position.middle_center, 1, 2, bgcolor=color.new(color.black, 80))
