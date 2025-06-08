@@ -8,10 +8,26 @@ strategy("boss/baboss [korol]",shorttitle="korol", overlay=true,pyramiding=20,de
 // BASIC TRADING SETTINGS
 // ===============================
 basic_group = "═══════════ Basic Trading Settings ═══════════"
-use_long_trades = input.bool(true, "Use Long Trades", group=basic_group)
+use_long_trades = input.bool(false, "Use Long Trades", group=basic_group)
 use_short_trades = input.bool(false, "Use Short Trades", group=basic_group)
 input_allow_entry_without_indicators = input.bool(false, "Allow Entry if NO Indicators Active?", group=basic_group)
 entry_cooldown_bars = input.int(5, "Min Bars Between Entries", minval=0, maxval=100, group=basic_group)
+
+
+// ===============================
+// SIGNAL MEMORY VARIABLES (В НАЧАЛЕ КОДА!)
+// ===============================
+// Константы
+CANDLE_MEMORY_LENGTH = 99
+RSI_CROSS_MEMORY_LENGTH = 14
+
+// Memory переменные  
+var int candle_pattern_memory = 0
+var bool candle_signal_stored = false
+var int rsi_cross_memory = 0
+var bool rsi_cross_stored = false
+var float trailing_stop_level = na
+var bool breakeven_activated = false
 // ===============================
 // HELPER FUNCTIONS
 // ===============================
@@ -1643,29 +1659,46 @@ if use_divergences
     if div_short_signal_calc
         met_entry_conditions_short += 1
 
-// Candlestick Patterns - FIXED
+// Candlestick Patterns - WITH SIGNAL MEMORY (как у автора)
 if use_candle_patterns
     active_entry_conditions_long += 1
     active_entry_conditions_short += 1
     
-    candle_long_signal_calc = false
-    candle_short_signal_calc = false
+    // Проверяем новые сигналы
+    candle_long_signal_current = false
+    candle_short_signal_current = false
     
     if cp_hammer
-        candle_long_signal_calc := candle_long_signal_calc or (hammer_calc and close > open)
-        candle_short_signal_calc := candle_short_signal_calc or (hammer_calc and close < open)
+        candle_long_signal_current := candle_long_signal_current or (hammer_calc and close > open)
+        candle_short_signal_current := candle_short_signal_current or (hammer_calc and close < open)
     
     if cp_engulfing
-        candle_long_signal_calc := candle_long_signal_calc or engulfing_bull_calc
-        candle_short_signal_calc := candle_short_signal_calc or engulfing_bear_calc
+        candle_long_signal_current := candle_long_signal_current or engulfing_bull_calc
+        candle_short_signal_current := candle_short_signal_current or engulfing_bear_calc
     
     if cp_doji
-        candle_long_signal_calc := candle_long_signal_calc or (doji_calc and close > ta.sma(close, 20))
-        candle_short_signal_calc := candle_short_signal_calc or (doji_calc and close < ta.sma(close, 20))
+        candle_long_signal_current := candle_long_signal_current or (doji_calc and close > ta.sma(close, 20))
+        candle_short_signal_current := candle_short_signal_current or (doji_calc and close < ta.sma(close, 20))
     
-    if candle_long_signal_calc
+    // ✅ SIGNAL MEMORY LOGIC (как у автора Dimkud)
+    // Если новый сигнал - запоминаем на 99 свечей
+    if candle_long_signal_current and not candle_signal_stored
+        candle_pattern_memory := CANDLE_MEMORY_LENGTH
+        candle_signal_stored := true
+    
+    // Уменьшаем счетчик Memory
+    if candle_pattern_memory > 0
+        candle_pattern_memory -= 1
+    else
+        candle_signal_stored := false
+    
+    // Финальный сигнал = текущий ИЛИ запомненный
+    candle_long_signal_final = candle_long_signal_current or candle_signal_stored
+    candle_short_signal_final = candle_short_signal_current or candle_signal_stored
+    
+    if candle_long_signal_final
         met_entry_conditions_long += 1
-    if candle_short_signal_calc
+    if candle_short_signal_final
         met_entry_conditions_short += 1
 
 // Linear Regression Channel
@@ -1796,8 +1829,13 @@ all_filters_result = volume_filter_result and volatility_filter_result and highl
 
 // Separate conditions for DCA and regular trading
 dca_entry_allowed = use_dca_grid_main and time_trade_allowed and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
-dca_long_ready = dca_entry_allowed and (dca_grid_direction == "Long" or dca_grid_direction == "Длинная")
-dca_short_ready = dca_entry_allowed and (dca_grid_direction == "Short" or dca_grid_direction == "Короткая")
+
+// ✅ DCA запускается только при 100% совпадении ВСЕХ активных индикаторов
+dca_signal_ready_long = (active_entry_conditions_long > 0 and met_entry_conditions_long == active_entry_conditions_long) or (active_entry_conditions_long == 0 and input_allow_entry_without_indicators)
+dca_signal_ready_short = (active_entry_conditions_short > 0 and met_entry_conditions_short == active_entry_conditions_short) or (active_entry_conditions_short == 0 and input_allow_entry_without_indicators)
+
+dca_long_ready = dca_entry_allowed and (dca_grid_direction == "Long" or dca_grid_direction == "Длинная") and dca_signal_ready_long
+dca_short_ready = dca_entry_allowed and (dca_grid_direction == "Short" or dca_grid_direction == "Короткая") and dca_signal_ready_short
 
 // Regular trading conditions (when DCA is disabled)
 regular_can_trigger_long = (active_entry_conditions_long > 0 and met_entry_conditions_long == active_entry_conditions_long) or (active_entry_conditions_long == 0 and input_allow_entry_without_indicators)
@@ -1822,14 +1860,11 @@ var float weighted_avg_price = 0.0
 // Защита от частых входов
 var int last_entry_bar_index = 0
 var int last_dca_entry_bar = 0
-var int dca_min_bars_between_entries = timeframe.period == "1M" ? 100 : timeframe.period == "5M" ? 50 : timeframe.period == "15M" ? 30 : timeframe.period == "1h" ? 24 : timeframe.period == "2h" ? 12 : timeframe.period == "4h" ? 6 : timeframe.period == "1D" ? 3 : timeframe.period == "1W" ? 1 : 20
+var int dca_min_bars_between_entries = timeframe.period == "1M" ? 2880 : timeframe.period == "5M" ? 576 : timeframe.period == "15M" ? 192 : timeframe.period == "1h" ? 48 : timeframe.period == "2h" ? 24 : timeframe.period == "4h" ? 12 : timeframe.period == "1D" ? 2 : timeframe.period == "1W" ? 1 : 48
+
 // Order Indent Variables
 var float indent_target_price_state = na
 var int indent_bar_counter_state = 0
-
-// TP/SL State Variables
-var float trailing_stop_level = na
-var bool breakeven_activated = false
 
 // DCA Functions
 reset_dca_tracking() =>
@@ -1865,8 +1900,9 @@ long_dca_entry = false
 short_dca_entry = false
 
 if use_dca_grid_main
-    long_dca_entry := (dca_grid_direction == "Long" or dca_grid_direction == "Длинная") and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and can_enter_due_to_cooldown
-    short_dca_entry := (dca_grid_direction == "Short" or dca_grid_direction == "Короткая") and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and can_enter_due_to_cooldown
+    long_dca_entry := dca_long_ready and na(entry_price_dca) and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and can_enter_due_to_cooldown
+    short_dca_entry := dca_short_ready and na(entry_price_dca) and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and can_enter_due_to_cooldown
+    
 // Execute DCA Orders
 if long_dca_entry
     entry_price_dca := close
