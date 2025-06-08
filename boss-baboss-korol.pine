@@ -4,14 +4,6 @@
 
 strategy("boss/baboss [korol]",shorttitle="korol", overlay=true,pyramiding=20,default_qty_type=strategy.percent_of_equity,default_qty_value=5,initial_capital=10000,commission_type=strategy.commission.percent,commission_value=0.1,calc_on_order_fills=true,calc_on_every_tick=false,max_labels_count=500, max_lines_count=500,max_bars_back=5000,process_orders_on_close=true, fill_orders_on_standard_ohlc = true)
               
-
-// ===============================
-// CSV IMPORT/EXPORT FUNCTIONALITY
-// ===============================
-csv_string = input.text_area("", "Paste CSV String Here (for import)")
-show_export = input.bool(false, "Show Export String")
-export_button = input.bool(false, "Generate Export String")
-
 // ===============================
 // BASIC TRADING SETTINGS
 // ===============================
@@ -81,7 +73,7 @@ block_saturday = input.bool(false, "Sa", group=days_group, inline="days2")
 // ===============================
 dca_group = "═══════════ DCA Grid Settings ═══════════"
 use_dca_grid_main = input.bool(false, "Activate DCA Grid ?", group=dca_group)
-dca_grid_direction = input.string("Long", "Long or Short Grid ?", options=["Long", "Short"], group=dca_group)
+dca_grid_direction = input.string("Long", "Long or Short Grid ?", options=["Long", "Short", "Длинная", "Короткая"], group=dca_group)
 deposit_for_bot = input.float(50, "Deposit for Bot (for the entire grid) ($)", minval=1, group=dca_group)
 leverage_input = input.int(20, "Leverage (1x-20x)", minval=1, maxval=20, group=dca_group)
 grid_size_percent = input.float(2.9, "Grid Size (%)", minval=0.1, maxval=50.0, step=0.1, group=dca_group)
@@ -1804,8 +1796,8 @@ all_filters_result = volume_filter_result and volatility_filter_result and highl
 
 // Separate conditions for DCA and regular trading
 dca_entry_allowed = use_dca_grid_main and time_trade_allowed and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
-dca_long_ready = dca_entry_allowed and dca_grid_direction == "Long"
-dca_short_ready = dca_entry_allowed and dca_grid_direction == "Short"
+dca_long_ready = dca_entry_allowed and (dca_grid_direction == "Long" or dca_grid_direction == "Длинная")
+dca_short_ready = dca_entry_allowed and (dca_grid_direction == "Short" or dca_grid_direction == "Короткая")
 
 // Regular trading conditions (when DCA is disabled)
 regular_can_trigger_long = (active_entry_conditions_long > 0 and met_entry_conditions_long == active_entry_conditions_long) or (active_entry_conditions_long == 0 and input_allow_entry_without_indicators)
@@ -1873,8 +1865,8 @@ long_dca_entry = false
 short_dca_entry = false
 
 if use_dca_grid_main
-    long_dca_entry := dca_grid_direction == "Long" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and regular_can_trigger_long and can_enter_due_to_cooldown
-    short_dca_entry := dca_grid_direction == "Short" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and regular_can_trigger_short and can_enter_due_to_cooldown
+    long_dca_entry := (dca_grid_direction == "Long" or dca_grid_direction == "Длинная") and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and can_enter_due_to_cooldown
+    short_dca_entry := (dca_grid_direction == "Short" or dca_grid_direction == "Короткая") and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and can_enter_due_to_cooldown
 // Execute DCA Orders
 if long_dca_entry
     entry_price_dca := close
@@ -1926,7 +1918,7 @@ if short_dca_entry
 
 // DCA Additional Orders
 if not na(entry_price_dca) and dca_order_count < number_of_orders
-    if dca_grid_direction == "Long" and strategy.position_size > 0
+    if (dca_grid_direction == "Long" or dca_grid_direction == "Длинная") and strategy.position_size > 0
         for i = dca_order_count to number_of_orders - 1
             if not array.get(dca_order_placed, i)
                 next_level = array.get(dca_levels, i)
@@ -1940,7 +1932,7 @@ if not na(entry_price_dca) and dca_order_count < number_of_orders
                     weighted_avg_price := (weighted_avg_price * (total_position_size - order_qty) + close * order_qty) / total_position_size
                     break
     
-    if dca_grid_direction == "Short" and strategy.position_size < 0
+    if (dca_grid_direction == "Short" or dca_grid_direction == "Короткая") and strategy.position_size < 0
         for i = dca_order_count to number_of_orders - 1
             if not array.get(dca_order_placed, i)
                 next_level = array.get(dca_levels, i)
@@ -2340,60 +2332,6 @@ if final_short_condition
 if strategy.position_size[1] != 0 and strategy.position_size == 0
     alert_msg = '{"action": "CLOSE", "symbol": "' + syminfo.ticker + '", "price": ' + str.tostring(close) + '}'
     alert(alert_msg, alert.freq_once_per_bar)
-
-// ===============================
-// CSV EXPORT
-// ===============================
-if export_button and barstate.islast
-    csv_str = ""
-    csv_str += "use_long_trades," + str.tostring(use_long_trades ? 1 : 0) + "\n"
-    csv_str += "use_short_trades," + str.tostring(use_short_trades ? 1 : 0) + "\n"
-    csv_str += "use_dca_grid_main," + str.tostring(use_dca_grid_main ? 1 : 0) + "\n"
-    csv_str += "dca_grid_direction," + dca_grid_direction + "\n"
-    csv_str += "take_profit_percent," + str.tostring(take_profit_percent) + "\n"
-    csv_str += "stop_loss_percent," + str.tostring(stop_loss_percent) + "\n"
-    csv_str += "use_rsi1," + str.tostring(use_rsi1 ? 1 : 0) + "\n"
-    csv_str += "rsi1_length," + str.tostring(rsi1_length) + "\n"
-    csv_str += "use_rsi2," + str.tostring(use_rsi2 ? 1 : 0) + "\n"
-    csv_str += "use_rsi3," + str.tostring(use_rsi3 ? 1 : 0) + "\n"
-    csv_str += "use_st1," + str.tostring(use_st1 ? 1 : 0) + "\n"
-    csv_str += "st1_period," + str.tostring(st1_period) + "\n"
-    csv_str += "use_st2," + str.tostring(use_st2 ? 1 : 0) + "\n"
-    csv_str += "use_st3," + str.tostring(use_st3 ? 1 : 0) + "\n"
-    csv_str += "use_supertrend_legacy," + str.tostring(use_supertrend_legacy ? 1 : 0) + "\n"
-    csv_str += "use_ma," + str.tostring(use_ma ? 1 : 0) + "\n"
-    csv_str += "ma_fast_length," + str.tostring(ma_fast_length) + "\n"
-    csv_str += "use_channels," + str.tostring(use_channels ? 1 : 0) + "\n"
-    csv_str += "use_stochastic," + str.tostring(use_stochastic ? 1 : 0) + "\n"
-    csv_str += "use_mfi," + str.tostring(use_mfi ? 1 : 0) + "\n"
-    csv_str += "use_cci," + str.tostring(use_cci ? 1 : 0) + "\n"
-    csv_str += "use_momentum," + str.tostring(use_momentum ? 1 : 0) + "\n"
-    csv_str += "use_rvi," + str.tostring(use_rvi ? 1 : 0) + "\n"
-    csv_str += "use_smi," + str.tostring(use_smi ? 1 : 0) + "\n"
-    csv_str += "use_dmi," + str.tostring(use_dmi ? 1 : 0) + "\n"
-    csv_str += "use_cmf," + str.tostring(use_cmf ? 1 : 0) + "\n"
-    csv_str += "use_bop," + str.tostring(use_bop ? 1 : 0) + "\n"
-    csv_str += "use_macd," + str.tostring(use_macd ? 1 : 0) + "\n"
-    csv_str += "use_qqe," + str.tostring(use_qqe ? 1 : 0) + "\n"
-    csv_str += "use_dynamic_rsi," + str.tostring(use_dynamic_rsi ? 1 : 0) + "\n"
-    csv_str += "use_dynamic_mfi," + str.tostring(use_dynamic_mfi ? 1 : 0) + "\n"
-    csv_str += "use_levels," + str.tostring(use_levels ? 1 : 0) + "\n"
-    csv_str += "use_divergences," + str.tostring(use_divergences ? 1 : 0) + "\n"
-    csv_str += "use_candle_patterns," + str.tostring(use_candle_patterns ? 1 : 0) + "\n"
-    csv_str += "use_lrc," + str.tostring(use_lrc ? 1 : 0) + "\n"
-    csv_str += "use_external1," + str.tostring(use_external1 ? 1 : 0) + "\n"
-    csv_str += "use_external2," + str.tostring(use_external2 ? 1 : 0) + "\n"
-    csv_str += "use_volume_filter," + str.tostring(use_volume_filter ? 1 : 0) + "\n"
-    csv_str += "use_volatility_filter," + str.tostring(use_volatility_filter ? 1 : 0) + "\n"
-    csv_str += "use_highlow_filter," + str.tostring(use_highlow_filter ? 1 : 0) + "\n"
-    csv_str += "use_atr_change_filter," + str.tostring(use_atr_change_filter ? 1 : 0) + "\n"
-    csv_str += "use_block_worse," + str.tostring(use_block_worse ? 1 : 0) + "\n"
-    csv_str += "use_consolidation," + str.tostring(use_consolidation ? 1 : 0) + "\n"
-    
-    var table export_table = table.new(position.middle_center, 1, 2, bgcolor=color.new(color.black, 80))
-    table.cell(export_table, 0, 0, "CSV Export:", text_color=color.yellow, text_size=size.normal)
-    table.cell(export_table, 0, 1, csv_str, text_color=color.white, text_size=size.small)
-
 
 
 // ===============================
