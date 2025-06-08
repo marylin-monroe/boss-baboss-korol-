@@ -18,8 +18,8 @@ export_button = input.bool(false, "Generate Export String")
 basic_group = "═══════════ Basic Trading Settings ═══════════"
 use_long_trades = input.bool(true, "Use Long Trades", group=basic_group)
 use_short_trades = input.bool(false, "Use Short Trades", group=basic_group)
-input_allow_entry_without_indicators = input.bool(true, "Allow Entry if NO Indicators Active?", group=basic_group)
-
+input_allow_entry_without_indicators = input.bool(false, "Allow Entry if NO Indicators Active?", group=basic_group)
+entry_cooldown_bars = input.int(5, "Min Bars Between Entries", minval=0, maxval=100, group=basic_group)
 // ===============================
 // HELPER FUNCTIONS
 // ===============================
@@ -80,7 +80,7 @@ block_saturday = input.bool(false, "Sa", group=days_group, inline="days2")
 // DCA GRID SETTINGS
 // ===============================
 dca_group = "═══════════ DCA Grid Settings ═══════════"
-use_dca_grid_main = input.bool(true, "Activate DCA Grid ?", group=dca_group)
+use_dca_grid_main = input.bool(false, "Activate DCA Grid ?", group=dca_group)
 dca_grid_direction = input.string("Long", "Long or Short Grid ?", options=["Long", "Short"], group=dca_group)
 deposit_for_bot = input.float(50, "Deposit for Bot (for the entire grid) ($)", minval=1, group=dca_group)
 leverage_input = input.int(20, "Leverage (1x-20x)", minval=1, maxval=20, group=dca_group)
@@ -181,7 +181,7 @@ btc_open = request.security(btc_symbol, timeframe.period, open)
 rsi_group = "═══════════ RSI Instances ═══════════"
 
 // RSI 1
-use_rsi1 = input.bool(false, "Use RSI #1", group=rsi_group)
+use_rsi1 = input.bool(true, "Use RSI #1", group=rsi_group)
 rsi1_length = input.int(14, "RSI #1 Length", minval=2, maxval=100, group=rsi_group)
 rsi1_oversold = input.float(30, "RSI #1 Oversold", minval=10, maxval=50, group=rsi_group)
 rsi1_overbought = input.float(70, "RSI #1 Overbought", minval=50, maxval=90, group=rsi_group)
@@ -1815,8 +1815,8 @@ regular_long_ready = not use_dca_grid_main and use_long_trades and time_trade_al
 regular_short_ready = not use_dca_grid_main and use_short_trades and time_trade_allowed and regular_can_trigger_short and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
 
 // Final conditions - DCA OR regular trading
-final_long_condition = dca_long_ready or regular_long_ready
-final_short_condition = dca_short_ready or regular_short_ready
+final_long_condition = use_dca_grid_main ? dca_long_ready : regular_long_ready
+final_short_condition = use_dca_grid_main ? dca_short_ready : regular_short_ready
 
 // ===============================
 // DCA GRID VARIABLES
@@ -1827,6 +1827,8 @@ var array<float> dca_levels = array.new<float>()
 var array<bool> dca_order_placed = array.new<bool>()
 var float total_position_size = 0.0
 var float weighted_avg_price = 0.0
+// Защита от частых входов
+var int last_entry_bar_index = 0
 var int last_dca_entry_bar = 0
 var int dca_min_bars_between_entries = timeframe.period == "1M" ? 100 : timeframe.period == "5M" ? 50 : timeframe.period == "15M" ? 30 : timeframe.period == "1h" ? 24 : timeframe.period == "2h" ? 12 : timeframe.period == "4h" ? 6 : timeframe.period == "1D" ? 3 : timeframe.period == "1W" ? 1 : 20
 // Order Indent Variables
@@ -1865,13 +1867,14 @@ if not na(indent_target_price_state)
         indent_bar_counter_state := 0
 
 // DCA Entry Logic
+can_enter_due_to_cooldown = bar_index - last_entry_bar_index >= entry_cooldown_bars
+
 long_dca_entry = false
 short_dca_entry = false
 
 if use_dca_grid_main
-    long_dca_entry := dca_grid_direction == "Long" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries
-    short_dca_entry := dca_grid_direction == "Short" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries
-
+    long_dca_entry := dca_grid_direction == "Long" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and regular_can_trigger_long and can_enter_due_to_cooldown
+    short_dca_entry := dca_grid_direction == "Short" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries and regular_can_trigger_short and can_enter_due_to_cooldown
 // Execute DCA Orders
 if long_dca_entry
     entry_price_dca := close
@@ -1892,6 +1895,7 @@ if long_dca_entry
     
     qty = get_position_size_dca(1) / close
     strategy.entry("DCA_L1", strategy.long, qty=qty)
+    last_entry_bar_index := bar_index
     total_position_size := qty
     weighted_avg_price := close
     last_dca_entry_bar := bar_index
@@ -1915,6 +1919,7 @@ if short_dca_entry
     
     qty = get_position_size_dca(1) / close
     strategy.entry("DCA_S1", strategy.short, qty=qty)
+    last_entry_bar_index := bar_index
     total_position_size := qty
     weighted_avg_price := close
     last_dca_entry_bar := bar_index
@@ -1951,32 +1956,36 @@ if not na(entry_price_dca) and dca_order_count < number_of_orders
 
 else
     // Regular Trading (non-DCA)
-    if final_long_condition and strategy.position_size == 0
+    if final_long_condition and strategy.position_size == 0 and can_enter_due_to_cooldown
         if use_order_indent
             indent_target_price_state := close * (1 - indent_percent / 100)
             indent_bar_counter_state := 0
         else
             strategy.entry("Long", strategy.long)
+            last_entry_bar_index := bar_index
     
-    if final_short_condition and strategy.position_size == 0
+    if final_short_condition and strategy.position_size == 0 and can_enter_due_to_cooldown
         if use_order_indent
             indent_target_price_state := close * (1 + indent_percent / 100)
             indent_bar_counter_state := 0
         else
             strategy.entry("Short", strategy.short)
+            last_entry_bar_index := bar_index
     
     // Execute indent orders for regular trading
     if not use_dca_grid_main and not na(indent_target_price_state) and strategy.position_size == 0
         if final_long_condition and close <= indent_target_price_state
             strategy.entry("Long", strategy.long)
+            last_entry_bar_index := bar_index
             indent_target_price_state := na
             indent_bar_counter_state := 0
         
         if final_short_condition and close >= indent_target_price_state
             strategy.entry("Short", strategy.short)
+            last_entry_bar_index := bar_index
             indent_target_price_state := na
             indent_bar_counter_state := 0
-
+    
 // ===============================
 // EXIT MANAGEMENT
 // ===============================
