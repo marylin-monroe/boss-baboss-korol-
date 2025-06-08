@@ -18,7 +18,7 @@ export_button = input.bool(false, "Generate Export String")
 basic_group = "═══════════ Basic Trading Settings ═══════════"
 use_long_trades = input.bool(true, "Use Long Trades", group=basic_group)
 use_short_trades = input.bool(false, "Use Short Trades", group=basic_group)
-input_allow_entry_without_indicators = input.bool(false, "Allow Entry if NO Indicators Active?", group=basic_group)
+input_allow_entry_without_indicators = input.bool(true, "Allow Entry if NO Indicators Active?", group=basic_group)
 
 // ===============================
 // HELPER FUNCTIONS
@@ -775,6 +775,10 @@ else
     ma_fast_value_calc := ma_fast_from_security
     ma_slow_value_calc := ma_slow_from_security
 
+// Pre-calculate cross signals for MA close (ВЫНЕСИ ИЗ БЛОКА else!)
+ma_cross_down_for_long_close = use_ma ? ta.crossunder(ma_fast_value_calc, ma_slow_value_calc) : false
+ma_cross_up_for_short_close = use_ma ? ta.crossover(ma_fast_value_calc, ma_slow_value_calc) : false
+
 // Channels with multi-timeframe - FIXED
 
 get_channel_data_for_current_context() =>
@@ -877,6 +881,8 @@ external2_cross_down_calc = ta.crossunder(external2_source, external2_level)
 
 // Parabolic SAR
 sar_value_calc = ta.sar(sar_start, sar_increment, sar_maximum)
+sar_cross_for_long_close = close < sar_value_calc
+sar_cross_for_short_close = close > sar_value_calc
 
 // Volume and Volatility
 volume_avg_calc = ta.sma(volume, volume_length)
@@ -1796,13 +1802,21 @@ if use_consolidation
 // Combine all filters
 all_filters_result = volume_filter_result and volatility_filter_result and highlow_filter_result and atr_change_filter_result and block_worse_filter_result and consolidation_filter_result
 
-// Final trigger conditions
-can_trigger_long_entry = (active_entry_conditions_long > 0 and met_entry_conditions_long == active_entry_conditions_long) or (active_entry_conditions_long == 0 and input_allow_entry_without_indicators)
-can_trigger_short_entry = (active_entry_conditions_short > 0 and met_entry_conditions_short == active_entry_conditions_short) or (active_entry_conditions_short == 0 and input_allow_entry_without_indicators)
+// Separate conditions for DCA and regular trading
+dca_entry_allowed = use_dca_grid_main and time_trade_allowed and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
+dca_long_ready = dca_entry_allowed and dca_grid_direction == "Long"
+dca_short_ready = dca_entry_allowed and dca_grid_direction == "Short"
 
-// Final entry conditions with filters
-final_long_condition = (use_long_trades or (use_dca_grid_main and dca_grid_direction == "Long")) and time_trade_allowed and can_trigger_long_entry and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
-final_short_condition = (use_short_trades or (use_dca_grid_main and dca_grid_direction == "Short")) and time_trade_allowed and can_trigger_short_entry and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
+// Regular trading conditions (when DCA is disabled)
+regular_can_trigger_long = (active_entry_conditions_long > 0 and met_entry_conditions_long == active_entry_conditions_long) or (active_entry_conditions_long == 0 and input_allow_entry_without_indicators)
+regular_can_trigger_short = (active_entry_conditions_short > 0 and met_entry_conditions_short == active_entry_conditions_short) or (active_entry_conditions_short == 0 and input_allow_entry_without_indicators)
+
+regular_long_ready = not use_dca_grid_main and use_long_trades and time_trade_allowed and regular_can_trigger_long and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
+regular_short_ready = not use_dca_grid_main and use_short_trades and time_trade_allowed and regular_can_trigger_short and all_filters_result and strategy.position_size == 0 and barstate.isconfirmed
+
+// Final conditions - DCA OR regular trading
+final_long_condition = dca_long_ready or regular_long_ready
+final_short_condition = dca_short_ready or regular_short_ready
 
 // ===============================
 // DCA GRID VARIABLES
@@ -1813,7 +1827,8 @@ var array<float> dca_levels = array.new<float>()
 var array<bool> dca_order_placed = array.new<bool>()
 var float total_position_size = 0.0
 var float weighted_avg_price = 0.0
-
+var int last_dca_entry_bar = 0
+var int dca_min_bars_between_entries = timeframe.period == "1M" ? 100 : timeframe.period == "5M" ? 50 : timeframe.period == "15M" ? 30 : timeframe.period == "1h" ? 24 : timeframe.period == "2h" ? 12 : timeframe.period == "4h" ? 6 : timeframe.period == "1D" ? 3 : timeframe.period == "1W" ? 1 : 20
 // Order Indent Variables
 var float indent_target_price_state = na
 var int indent_bar_counter_state = 0
@@ -1849,89 +1864,90 @@ if not na(indent_target_price_state)
         indent_target_price_state := na
         indent_bar_counter_state := 0
 
-// Execute DCA or Regular Orders
+// DCA Entry Logic
+long_dca_entry = false
+short_dca_entry = false
+
 if use_dca_grid_main
-    // DCA Entry Logic
-    entry_condition_long_dca = dca_grid_direction == "Long" and strategy.position_size == 0 and (use_order_indent ? not na(indent_target_price_state) and close <= indent_target_price_state : final_long_condition)
-    entry_condition_short_dca = dca_grid_direction == "Short" and strategy.position_size == 0 and (use_order_indent ? not na(indent_target_price_state) and close >= indent_target_price_state : final_short_condition)
+    long_dca_entry := dca_grid_direction == "Long" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries
+    short_dca_entry := dca_grid_direction == "Short" and na(entry_price_dca) and strategy.position_size == 0 and time_trade_allowed and all_filters_result and barstate.isconfirmed and (bar_index - last_dca_entry_bar) > dca_min_bars_between_entries
+
+// Execute DCA Orders
+if long_dca_entry
+    entry_price_dca := close
+    dca_order_count := 1
+    grid_step = entry_price_dca * grid_size_percent / 100
     
-    if entry_condition_long_dca and na(entry_price_dca)
-        entry_price_dca := close
-        dca_order_count := 1
-        grid_step = entry_price_dca * grid_size_percent / 100
-        
-        array.clear(dca_levels)
-        array.push(dca_levels, entry_price_dca)
-        
-        reset_dca_tracking()
-        array.set(dca_order_placed, 0, true)
-        
-        for i = 1 to number_of_orders - 1
-            step_multiplier = math.pow(logarithmic_steps, i - 1)
-            level_distance = grid_step * step_multiplier * i
-            level = entry_price_dca - level_distance
-            array.push(dca_levels, level)
-        
-        qty = get_position_size_dca(1) / close
-        strategy.entry("DCA_L1", strategy.long, qty=qty)
-        total_position_size := qty
-        weighted_avg_price := close
-        indent_target_price_state := na
-        indent_bar_counter_state := 0
+    array.clear(dca_levels)
+    array.push(dca_levels, entry_price_dca)
     
-    if entry_condition_short_dca and na(entry_price_dca)
-        entry_price_dca := close
-        dca_order_count := 1
-        grid_step = entry_price_dca * grid_size_percent / 100
-        
-        array.clear(dca_levels)
-        array.push(dca_levels, entry_price_dca)
-        
-        reset_dca_tracking()
-        array.set(dca_order_placed, 0, true)
-        
-        for i = 1 to number_of_orders - 1
-            step_multiplier = math.pow(logarithmic_steps, i - 1)
-            level_distance = grid_step * step_multiplier * i
-            level = entry_price_dca + level_distance
-            array.push(dca_levels, level)
-        
-        qty = get_position_size_dca(1) / close
-        strategy.entry("DCA_S1", strategy.short, qty=qty)
-        total_position_size := qty
-        weighted_avg_price := close
-        indent_target_price_state := na
-        indent_bar_counter_state := 0
+    reset_dca_tracking()
+    array.set(dca_order_placed, 0, true)
     
-    // DCA Additional Orders
-    if not na(entry_price_dca) and dca_order_count < number_of_orders
-        if dca_grid_direction == "Long" and strategy.position_size > 0
-            for i = dca_order_count to number_of_orders - 1
-                if not array.get(dca_order_placed, i)
-                    next_level = array.get(dca_levels, i)
-                    if close <= next_level
-                        dca_order_count += 1
-                        qty = get_position_size_dca(dca_order_count) / close
-                        strategy.entry("DCA_L" + str.tostring(dca_order_count), strategy.long, qty=qty)
-                        array.set(dca_order_placed, i, true)
-                        
-                        total_position_size := total_position_size + qty
-                        weighted_avg_price := (weighted_avg_price * (total_position_size - qty) + close * qty) / total_position_size
-                        break
-        
-        if dca_grid_direction == "Short" and strategy.position_size < 0
-            for i = dca_order_count to number_of_orders - 1
-                if not array.get(dca_order_placed, i)
-                    next_level = array.get(dca_levels, i)
-                    if close >= next_level
-                        dca_order_count += 1
-                        qty = get_position_size_dca(dca_order_count) / close
-                        strategy.entry("DCA_S" + str.tostring(dca_order_count), strategy.short, qty=qty)
-                        array.set(dca_order_placed, i, true)
-                        
-                        total_position_size := total_position_size + qty
-                        weighted_avg_price := (weighted_avg_price * (total_position_size - qty) + close * qty) / total_position_size
-                        break
+    for i = 1 to number_of_orders - 1
+        step_multiplier = math.pow(logarithmic_steps, i - 1)
+        level_distance = grid_step * step_multiplier * i
+        level = entry_price_dca - level_distance
+        array.push(dca_levels, level)
+    
+    qty = get_position_size_dca(1) / close
+    strategy.entry("DCA_L1", strategy.long, qty=qty)
+    total_position_size := qty
+    weighted_avg_price := close
+    last_dca_entry_bar := bar_index
+
+if short_dca_entry
+    entry_price_dca := close
+    dca_order_count := 1
+    grid_step = entry_price_dca * grid_size_percent / 100
+    
+    array.clear(dca_levels)
+    array.push(dca_levels, entry_price_dca)
+    
+    reset_dca_tracking()
+    array.set(dca_order_placed, 0, true)
+    
+    for i = 1 to number_of_orders - 1
+        step_multiplier = math.pow(logarithmic_steps, i - 1)
+        level_distance = grid_step * step_multiplier * i
+        level = entry_price_dca + level_distance
+        array.push(dca_levels, level)
+    
+    qty = get_position_size_dca(1) / close
+    strategy.entry("DCA_S1", strategy.short, qty=qty)
+    total_position_size := qty
+    weighted_avg_price := close
+    last_dca_entry_bar := bar_index
+
+// DCA Additional Orders
+if not na(entry_price_dca) and dca_order_count < number_of_orders
+    if dca_grid_direction == "Long" and strategy.position_size > 0
+        for i = dca_order_count to number_of_orders - 1
+            if not array.get(dca_order_placed, i)
+                next_level = array.get(dca_levels, i)
+                if close <= next_level
+                    dca_order_count += 1
+                    order_qty = get_position_size_dca(dca_order_count) / close
+                    strategy.entry("DCA_L" + str.tostring(dca_order_count), strategy.long, qty=order_qty)
+                    array.set(dca_order_placed, i, true)
+                    
+                    total_position_size := total_position_size + order_qty
+                    weighted_avg_price := (weighted_avg_price * (total_position_size - order_qty) + close * order_qty) / total_position_size
+                    break
+    
+    if dca_grid_direction == "Short" and strategy.position_size < 0
+        for i = dca_order_count to number_of_orders - 1
+            if not array.get(dca_order_placed, i)
+                next_level = array.get(dca_levels, i)
+                if close >= next_level
+                    dca_order_count += 1
+                    order_qty = get_position_size_dca(dca_order_count) / close
+                    strategy.entry("DCA_S" + str.tostring(dca_order_count), strategy.short, qty=order_qty)
+                    array.set(dca_order_placed, i, true)
+                    
+                    total_position_size := total_position_size + order_qty
+                    weighted_avg_price := (weighted_avg_price * (total_position_size - order_qty) + close * order_qty) / total_position_size
+                    break
 
 else
     // Regular Trading (non-DCA)
@@ -2089,10 +2105,9 @@ if close_only_profit
 
 // Parabolic SAR Close
 if close_parabolic_sar and strategy.position_size != 0 and profit_check_passed
-    sar_close = (strategy.position_size > 0 and close < sar_value_calc) or (strategy.position_size < 0 and close > sar_value_calc)
+    sar_close = (strategy.position_size > 0 and sar_cross_for_long_close) or (strategy.position_size < 0 and sar_cross_for_short_close)
     if sar_close
         strategy.close_all(comment="SAR Close")
-
 // LRC Close
 if close_lrc_signal and strategy.position_size != 0 and use_lrc and profit_check_passed
     lrc_close = (strategy.position_size > 0 and close > lrc_upper_calc) or (strategy.position_size < 0 and close < lrc_lower_calc)
@@ -2129,7 +2144,7 @@ if close_stoch_signal and strategy.position_size != 0 and use_stochastic and pro
 
 // MA Cross Close
 if close_ma_cross and strategy.position_size != 0 and use_ma and profit_check_passed
-    ma_close = (strategy.position_size > 0 and ta.crossunder(ma_fast_value_calc, ma_slow_value_calc)) or (strategy.position_size < 0 and ta.crossover(ma_fast_value_calc, ma_slow_value_calc))
+    ma_close = (strategy.position_size > 0 and ma_cross_down_for_long_close) or (strategy.position_size < 0 and ma_cross_up_for_short_close)
     if ma_close
         strategy.close_all(comment="MA Close")
 
@@ -2242,7 +2257,7 @@ if show_entry_signals_indiv
 
 // Signal Status Table
 if barstate.islast
-    var table signal_table = table.new(position.top_right, 3, 10, bgcolor=color.new(color.black, 90), border_width=1)
+    var table signal_table = table.new(position.top_right, 3, 8, bgcolor=color.new(color.black, 90), border_width=1)
     
     table.cell(signal_table, 0, 0, "Signal Status", bgcolor=color.blue, text_color=color.white)
     table.cell(signal_table, 1, 0, "Long", bgcolor=color.blue, text_color=color.white)
@@ -2256,17 +2271,21 @@ if barstate.islast
     table.cell(signal_table, 1, 2, str.tostring(met_entry_conditions_long), text_color=color.white)
     table.cell(signal_table, 2, 2, str.tostring(met_entry_conditions_short), text_color=color.white)
     
-    table.cell(signal_table, 0, 3, "Can Trigger:", text_color=color.white)
-    table.cell(signal_table, 1, 3, can_trigger_long_entry ? "✓" : "✗", text_color=can_trigger_long_entry ? color.green : color.red)
-    table.cell(signal_table, 2, 3, can_trigger_short_entry ? "✓" : "✗", text_color=can_trigger_short_entry ? color.green : color.red)
+    table.cell(signal_table, 0, 3, "Filters:", text_color=color.white)
+    table.cell(signal_table, 1, 3, all_filters_result ? "✓" : "✗", text_color=all_filters_result ? color.green : color.red)
+    table.cell(signal_table, 2, 3, all_filters_result ? "✓" : "✗", text_color=all_filters_result ? color.green : color.red)
     
-    table.cell(signal_table, 0, 4, "Filters:", text_color=color.white)
-    table.cell(signal_table, 1, 4, all_filters_result ? "✓" : "✗", text_color=all_filters_result ? color.green : color.red)
-    table.cell(signal_table, 2, 4, all_filters_result ? "✓" : "✗", text_color=all_filters_result ? color.green : color.red)
+    table.cell(signal_table, 0, 4, "Final Signal:", text_color=color.white)
+    table.cell(signal_table, 1, 4, final_long_condition ? "BUY" : "-", text_color=final_long_condition ? color.green : color.gray)
+    table.cell(signal_table, 2, 4, final_short_condition ? "SELL" : "-", text_color=final_short_condition ? color.red : color.gray)
     
-    table.cell(signal_table, 0, 5, "Final Signal:", text_color=color.white)
-    table.cell(signal_table, 1, 5, final_long_condition ? "BUY" : "-", text_color=final_long_condition ? color.green : color.gray)
-    table.cell(signal_table, 2, 5, final_short_condition ? "SELL" : "-", text_color=final_short_condition ? color.red : color.gray)
+    table.cell(signal_table, 0, 5, "DCA Grid:", text_color=color.white)
+    table.cell(signal_table, 1, 5, str.tostring(use_dca_grid_main), text_color=use_dca_grid_main ? color.green : color.red)
+    table.cell(signal_table, 2, 5, dca_grid_direction, text_color=color.white)
+    
+    table.cell(signal_table, 0, 6, "Position:", text_color=color.white)
+    table.cell(signal_table, 1, 6, str.tostring(strategy.position_size), text_color=strategy.position_size == 0 ? color.green : color.yellow)
+    table.cell(signal_table, 2, 6, "", text_color=color.white)
 
 // DCA Info Table
 if use_dca_grid_main and barstate.islast
@@ -2365,3 +2384,43 @@ if export_button and barstate.islast
     var table export_table = table.new(position.middle_center, 1, 2, bgcolor=color.new(color.black, 80))
     table.cell(export_table, 0, 0, "CSV Export:", text_color=color.yellow, text_size=size.normal)
     table.cell(export_table, 0, 1, csv_str, text_color=color.white, text_size=size.small)
+
+
+
+// ===============================
+// DEBUG ТАБЛИЦА
+// ===============================
+
+
+if barstate.islast
+    var table simple_debug = table.new(position.bottom_left, 2, 10, bgcolor=color.new(color.black, 90), border_width=1)
+    
+    table.cell(simple_debug, 0, 0, "SIMPLE DEBUG", bgcolor=color.blue, text_color=color.white)
+    table.cell(simple_debug, 1, 0, "", bgcolor=color.blue)
+    
+    table.cell(simple_debug, 0, 1, "DCA Grid:", text_color=color.white)
+    table.cell(simple_debug, 1, 1, str.tostring(use_dca_grid_main), text_color=use_dca_grid_main ? color.green : color.red)
+    
+    table.cell(simple_debug, 0, 2, "Direction:", text_color=color.white) 
+    table.cell(simple_debug, 1, 2, dca_grid_direction, text_color=color.white)
+    
+    table.cell(simple_debug, 0, 3, "Year OK:", text_color=color.white)
+    table.cell(simple_debug, 1, 3, str.tostring(year >= start_year and year <= stop_year), text_color=(year >= start_year and year <= stop_year) ? color.green : color.red)
+    
+    table.cell(simple_debug, 0, 4, "Position:", text_color=color.white)
+    table.cell(simple_debug, 1, 4, str.tostring(strategy.position_size), text_color=strategy.position_size == 0 ? color.green : color.yellow)
+    
+    table.cell(simple_debug, 0, 5, "Allow No Ind:", text_color=color.white)
+    table.cell(simple_debug, 1, 5, str.tostring(input_allow_entry_without_indicators), text_color=input_allow_entry_without_indicators ? color.green : color.red)
+    
+    table.cell(simple_debug, 0, 6, "Filters:", text_color=color.white)
+    table.cell(simple_debug, 1, 6, str.tostring(all_filters_result), text_color=all_filters_result ? color.green : color.red)
+    
+    table.cell(simple_debug, 0, 7, "Final Long:", text_color=color.white)
+    table.cell(simple_debug, 1, 7, str.tostring(final_long_condition), text_color=final_long_condition ? color.green : color.red)
+    
+    table.cell(simple_debug, 0, 8, "Final Short:", text_color=color.white)
+    table.cell(simple_debug, 1, 8, str.tostring(final_short_condition), text_color=final_short_condition ? color.green : color.red)
+    
+    table.cell(simple_debug, 0, 9, "Current Time:", text_color=color.white)
+    table.cell(simple_debug, 1, 9, str.tostring(year) + "/" + str.tostring(month), text_color=color.white)
